@@ -1,0 +1,39 @@
+# Local dev/full stack: `docker compose up` -> postgres + app (migrations auto-run).
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-funk}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-funk}
+      POSTGRES_DB: ${POSTGRES_DB:-funkparcours}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-funk}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3000}
+      JWT_SECRET: ${JWT_SECRET:-dev-insecure-change-me}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      DATABASE_URL: postgres://${POSTGRES_USER:-funk}:${POSTGRES_PASSWORD:-funk}@postgres:5432/${POSTGRES_DB:-funkparcours}
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:
