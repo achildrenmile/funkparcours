@@ -42,12 +42,15 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@funkparcours-db:5432/${POSTGRES_DB}
-    # Loopback publish lets deploy.sh health-check the internal port; cloudflared
-    # reaches the app via the docker network (service name), not this port.
+    # Loopback publish lets deploy.sh health-check the internal port.
     ports:
       - "127.0.0.1:3000:3000"
+    # Also joined to the existing oeradioat tunnel network so the running
+    # oeradioat-cloudflared can reach this app as http://funkparcours-app:3000
+    # (we reuse that tunnel instead of running our own — see README).
     networks:
       - funkparcours-net
+      - oeradioat-net
 
   cloudflared:
     image: cloudflare/cloudflared:latest
@@ -68,3 +71,7 @@ volumes:
 networks:
   funkparcours-net:
     driver: bridge
+  # the network of the existing oeradioat-cloudflared tunnel (reused for ingress)
+  oeradioat-net:
+    external: true
+    name: oeradioat_oeradioat-network
