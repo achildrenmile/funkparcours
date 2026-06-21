@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+**/dist-tsc
+**/*.tsbuildinfo
+.git
+.env
+.env.*
+!.env.example
+cloudflared/config.yml
+cloudflared/*.json
+*.log
+coverage
