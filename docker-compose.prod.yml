@@ -1,0 +1,41 @@
+# Production stack on host-node-02. App binds ONLY to 127.0.0.1 — public access
+# is via the existing cloudflared tunnel (funkparcours.oeradio.at). See README §Deployment.
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    # Expose only on loopback; cloudflared targets 127.0.0.1:3000.
+    # If cloudflared runs as a container on a shared network, drop this and
+    # attach both services to that network instead (see README).
+    ports:
+      - "127.0.0.1:3000:3000"
+
+volumes:
+  pgdata:
