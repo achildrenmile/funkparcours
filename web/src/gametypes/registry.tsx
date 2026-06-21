@@ -1,6 +1,9 @@
 import type React from "react";
 import { SymbolkarteLeit, SymbolkarteTrupp } from "./symbolkarte";
 import { SymbolkarteConfigForm } from "./symbolkarteConfig";
+import { NatoLeit, NatoTrupp, NatoConfigForm } from "./nato";
+import { MeldungLeit, MeldungTrupp, MeldungConfigForm } from "./meldung";
+import { KoordinatenLeit, KoordinatenTrupp, KoordinatenConfigForm } from "./koordinaten";
 
 export interface LeitViewProps {
   payload: any;
@@ -41,6 +44,34 @@ const REGISTRY: Record<string, FeGameType> = {
     LeitView: SymbolkarteLeit,
     TruppView: SymbolkarteTrupp,
     ConfigForm: SymbolkarteConfigForm,
+  },
+  nato: {
+    id: "nato",
+    label: "Buchstabieren (NATO)",
+    defaultConfig: { mode: "mix", count: 4, minLen: 4, maxLen: 7, showReference: true },
+    LeitView: NatoLeit,
+    TruppView: NatoTrupp,
+    ConfigForm: NatoConfigForm,
+  },
+  meldung: {
+    id: "meldung",
+    label: "Meldung",
+    defaultConfig: {
+      fields: ["von", "an", "datum_zeit", "ort", "lage", "anzahl_personen", "prioritaet", "meldetext"],
+      fuzzy: true,
+      fuzzyThreshold: 0.85,
+    },
+    LeitView: MeldungLeit,
+    TruppView: MeldungTrupp,
+    ConfigForm: MeldungConfigForm,
+  },
+  koordinaten: {
+    id: "koordinaten",
+    label: "Koordinaten",
+    defaultConfig: { rows: 8, cols: 8, markerCount: 5 },
+    LeitView: KoordinatenLeit,
+    TruppView: KoordinatenTrupp,
+    ConfigForm: KoordinatenConfigForm,
   },
 };
 
