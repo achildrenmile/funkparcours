@@ -1,0 +1,9 @@
+# Copy to cloudflared/config.yml on the host and fill in the tunnel UUID.
+# The credentials JSON (<UUID>.json) is written by `cloudflared tunnel create`.
+# cloudflared reaches the app over the docker network by service name.
+tunnel: <TUNNEL_UUID>
+credentials-file: /etc/cloudflared/<TUNNEL_UUID>.json
+ingress:
+  - hostname: funkparcours.oeradio.at
+    service: http://funkparcours-app:3000
+  - service: http_status:404

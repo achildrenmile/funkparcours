@@ -1,8 +1,15 @@
-# Production stack on host-node-02. App binds ONLY to 127.0.0.1 — public access
-# is via the existing cloudflared tunnel (funkparcours.oeradio.at). See README §Deployment.
+# Production stack on host-node-02. Mirrors the per-app cloudflared-container
+# pattern already used on this host (oeradioat/status/wavelog): app + postgres
+# on a private bridge network, plus a dedicated cloudflared container that owns
+# this app's named tunnel and reaches the app by service name.
+#
+# cloudflared sits behind the "tunnel" profile so the base `up -d` (app+postgres)
+# works before the tunnel credentials exist. Start it with:
+#   docker compose -f docker-compose.prod.yml --profile tunnel up -d
 services:
   postgres:
     image: postgres:16-alpine
+    container_name: funkparcours-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -15,11 +22,15 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - funkparcours-net
 
   app:
     build:
       context: .
       dockerfile: Dockerfile
+    image: funkparcours-app:local
+    container_name: funkparcours-app
     restart: unless-stopped
     depends_on:
       postgres:
@@ -30,12 +41,30 @@ services:
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL}
       JWT_SECRET: ${JWT_SECRET}
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
-      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-    # Expose only on loopback; cloudflared targets 127.0.0.1:3000.
-    # If cloudflared runs as a container on a shared network, drop this and
-    # attach both services to that network instead (see README).
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@funkparcours-db:5432/${POSTGRES_DB}
+    # Loopback publish lets deploy.sh health-check the internal port; cloudflared
+    # reaches the app via the docker network (service name), not this port.
     ports:
       - "127.0.0.1:3000:3000"
+    networks:
+      - funkparcours-net
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: funkparcours-cloudflared
+    restart: unless-stopped
+    profiles: ["tunnel"]
+    command: tunnel --no-autoupdate --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./cloudflared:/etc/cloudflared
+    depends_on:
+      - app
+    networks:
+      - funkparcours-net
 
 volumes:
   pgdata:
+
+networks:
+  funkparcours-net:
+    driver: bridge
