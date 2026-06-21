@@ -1,0 +1,22 @@
+{
+  "name": "funkparcours",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "shared",
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "build": "npm run build -w shared && npm run build -w server && npm run build -w web",
+    "dev:server": "npm run dev -w server",
+    "dev:web": "npm run dev -w web",
+    "test": "npm run test -w shared",
+    "migrate": "npm run migrate -w server",
+    "lint": "tsc -b --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
