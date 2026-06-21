@@ -9,9 +9,9 @@ durch, der die Aufgabe an seinem eigenen Bildschirm nachbaut.
 > Leit- und Empfangs-View gibt es **keinen** Daten-Sync der Aufgabeninhalte. Die einzigen
 > Realtime-Signale sind Start, Timer, Submit und Leaderboard.
 
-Status: **Vertical Slice** — Spieltyp `symbolkarte` läuft end-to-end (Generator, Leit-
-und Trupp-View, Auto-Wertung, Live-Leaderboard). Weitere Typen (`nato`, `meldung`,
-`koordinaten`) docken über dasselbe Plugin-Interface an.
+Status: **v1-Spieltypen vollständig** — `symbolkarte`, `nato`, `meldung`, `koordinaten`
+laufen end-to-end (Generator, Leit-/Trupp-View, Auto-Wertung, Live-Leaderboard) über ein
+gemeinsames Plugin-Interface. `lego`/`schaltung` (`manual_photo`) folgen als reine Plugins.
 
 ---
 
@@ -131,6 +131,15 @@ Gesamtwertung = Summe der Spielteil-Scores. Tie-breaks sind deterministisch
 (Genauigkeit → Zeit → Gruppen-ID).
 
 ---
+
+### v1-Spieltypen
+
+| Typ | Aufgabe | Genauigkeit |
+|-----|---------|-------------|
+| `symbolkarte` | Beschriftetes Raster, Formen×Farben, optional Stapel (Z-Reihenfolge) | korrekte Felder / gesamt |
+| `nato` | Rufzeichen/Wörter buchstabieren (Modus + Anzahl + Länge) | korrekte Zeichen / gesamt (+ perfekte Wörter) |
+| `meldung` | Strukturierte Notfunk-Meldung, Felder konfigurierbar | korrekte Felder / gesamt (Text normalisiert, optional fuzzy) |
+| `koordinaten` | Beschriftetes Raster, Marker setzen (Schiffe-versenken-Stil) | zellweise korrekt (Treffer + Falschmarker) |
 
 ## Spieltypen & Plugin-Architektur
 
