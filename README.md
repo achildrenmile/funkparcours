@@ -210,7 +210,47 @@ Ablauf (idempotent, gefahrlose Re-Runs): Vorbedingungen (sauberer Git-Stand, Bra
 Exit≠0 bei Fehler) → `docker image prune`. Build standardmäßig **auf dem Host** (kein
 Registry-Zwang; ghcr optional).
 
-### Cloudflared-Ingress
+### Cloudflared — Ist-Zustand auf <deploy-host> (verifiziert 2026-06-21)
+
+cloudflared läuft hier **als Container pro App** (kein Host-Dienst, kein remote-managed
+Tunnel): `<tunnel-container>`, `<other-app>`, `<other-app>`. Jede App hat
+ihren **eigenen, lokal gemanagten Tunnel** mit `cloudflared/config.yml` + Credentials-JSON
+(im jeweiligen App-Ordner, ins App-Docker-Netz gehängt, App per Service-Name erreicht).
+
+`docker-compose.prod.yml` von FunkParcours folgt exakt diesem Muster: `funkparcours-app` +
+`funkparcours-db` + `funkparcours-cloudflared` auf `funkparcours-net`; cloudflared erreicht
+die App als `http://funkparcours-app:3000`. Der cloudflared-Dienst liegt hinter dem
+Compose-Profil **`tunnel`**, damit App+DB schon ohne Tunnel-Creds deployen.
+
+**Deploy-Stand:** App + Postgres laufen (intern `127.0.0.1:3000`, Health ok). Offen ist
+**ein** Schritt, der Cloudflare-Zugang braucht (auf dem Host liegt kein `cert.pem`/API-Token):
+
+```bash
+# 1) einmalig: Tunnel-Verwaltung autorisieren (öffnet eine URL im Browser -> cert.pem)
+docker run -it --rm -v ~/.cloudflared:/home/nonroot/.cloudflared \
+  cloudflare/cloudflared:latest tunnel login
+
+# 2) dedizierten Tunnel anlegen (schreibt <UUID>.json)
+docker run -it --rm -v ~/.cloudflared:/home/nonroot/.cloudflared \
+  cloudflare/cloudflared:latest tunnel create funkparcours
+
+# 3) DNS-Route setzen
+docker run -it --rm -v ~/.cloudflared:/home/nonroot/.cloudflared \
+  cloudflare/cloudflared:latest tunnel route dns funkparcours funkparcours.oeradio.at
+
+# 4) Creds + config in den App-Ordner, dann cloudflared-Container starten
+cp ~/.cloudflared/<UUID>.json <remote-dir>/cloudflared/
+cp cloudflared/config.yml.example <remote-dir>/cloudflared/config.yml
+#   in config.yml <TUNNEL_UUID> ersetzen
+cd <remote-dir> && \
+  docker compose --env-file .env -f docker-compose.prod.yml --profile tunnel up -d cloudflared
+```
+
+Danach ist `https://funkparcours.oeradio.at` live. **Alternative:** ein Cloudflare-API-Token
+mit *Tunnel*- + *DNS-Edit*-Rechten bereitstellen — dann lässt sich Schritt 1–3 ohne Browser
+automatisieren.
+
+### Cloudflared-Ingress — generische Varianten (Referenz)
 
 `docker-compose.prod.yml` bindet die App auf **`127.0.0.1:3000`**. Wie cloudflared an die App
 kommt, hängt von der Betriebsart auf dem Host ab — **auf dem Host prüfen** und die passende
