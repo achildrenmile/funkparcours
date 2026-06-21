@@ -48,9 +48,12 @@ function joinLinks(gs: (typeof groups.$inferSelect)[]) {
   }));
 }
 
+// stricter per-route limits on top of the global limit (brute-force / spam)
+const tightLimit = { config: { rateLimit: { max: 10, timeWindow: "1 minute" } } };
+
 export async function adminRoutes(app: FastifyInstance) {
   // --- create game ---
-  app.post("/api/games", async (req, reply) => {
+  app.post("/api/games", tightLimit, async (req, reply) => {
     const body = z
       .object({ title: z.string().min(1).max(120), adminPassword: z.string().min(4).max(200) })
       .parse(req.body);
@@ -76,7 +79,7 @@ export async function adminRoutes(app: FastifyInstance) {
   });
 
   // --- login ---
-  app.post("/api/games/:code/login", async (req, reply) => {
+  app.post("/api/games/:code/login", tightLimit, async (req, reply) => {
     const { code } = req.params as { code: string };
     const { password } = z.object({ password: z.string() }).parse(req.body);
     const [game] = await db.select().from(games).where(eq(games.code, code));

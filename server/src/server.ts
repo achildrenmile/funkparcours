@@ -1,5 +1,6 @@
 import { buildApp } from "./app.js";
 import { env } from "./env.js";
+import { cleanupExpiredGames } from "./services/game.js";
 
 const app = await buildApp();
 
@@ -10,6 +11,17 @@ try {
   app.log.error(err);
   process.exit(1);
 }
+
+// hourly cleanup of expired games
+const cleanup = setInterval(
+  () => {
+    cleanupExpiredGames()
+      .then((n) => n > 0 && app.log.info(`cleaned up ${n} expired game(s)`))
+      .catch((e) => app.log.error(e));
+  },
+  60 * 60 * 1000,
+);
+cleanup.unref();
 
 for (const sig of ["SIGINT", "SIGTERM"] as const) {
   process.on(sig, async () => {

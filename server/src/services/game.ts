@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, lt, isNotNull } from "drizzle-orm";
 import { db, schema } from "../db/index.js";
 import {
   getGameType,
@@ -10,6 +10,15 @@ import {
 } from "@funkparcours/shared";
 
 const { games, gameParts, groups, rounds, submissions, events } = schema;
+
+/** Remove games past their expiry. FK cascades drop parts/rounds/submissions/events. */
+export async function cleanupExpiredGames(): Promise<number> {
+  const deleted = await db
+    .delete(games)
+    .where(and(isNotNull(games.expiresAt), lt(games.expiresAt, new Date())))
+    .returning({ id: games.id });
+  return deleted.length;
+}
 
 export async function loadGameByCode(code: string) {
   const [game] = await db.select().from(games).where(eq(games.code, code));
