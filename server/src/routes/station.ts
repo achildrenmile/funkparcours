@@ -119,7 +119,10 @@ export async function stationRoutes(app: FastifyInstance) {
   });
 
   // --- trupp: submit rebuild ---
-  app.post("/api/station/:token/submit", async (req, reply) => {
+  app.post(
+    "/api/station/:token/submit",
+    { config: { rateLimit: { max: 20, timeWindow: "1 minute" } } },
+    async (req, reply) => {
     const { token } = req.params as { token: string };
     const st = await resolveStation(token);
     if (!st || st.role !== "trupp") return reply.code(403).send({ error: "nur Empfangstrupp" });
@@ -143,5 +146,6 @@ export async function stationRoutes(app: FastifyInstance) {
     } catch (err) {
       return reply.code(400).send({ error: (err as Error).message });
     }
-  });
+    },
+  );
 }

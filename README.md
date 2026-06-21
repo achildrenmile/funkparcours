@@ -173,7 +173,118 @@ interface GameType<Config, Payload, Answer> {
 
 ## Deployment
 
-Wird in der Deploy-Phase ergänzt: containerisiert auf `host-node-02`, öffentlich über den
-bestehenden Cloudflare-Tunnel unter `funkparcours.oeradio.at`
-(`docker-compose.prod.yml` + `deploy.sh`). `docker-compose.prod.yml` bindet die App nur
-auf `127.0.0.1:3000`; cloudflared terminiert TLS und routet das Public Hostname dorthin.
+Containerisiert auf **`host-node-02`**, öffentlich über den **bestehenden Cloudflare-Tunnel
+von oeradio.at** unter **`https://funkparcours.oeradio.at`**. Kein offener Port nach außen,
+TLS terminiert Cloudflare. Stack: `docker-compose.prod.yml` (app + postgres), Auslieferung
+per `deploy.sh`.
+
+### Einmalige Vorbereitung auf dem Host
+
+```bash
+ssh achildrenmile@host-node-02
+mkdir -p /home/achildrenmile/funkparcours && cd $_
+# .env mit Prod-Secrets anlegen (bleibt NUR hier, nie im Repo):
+cat > .env <<'EOF'
+NODE_ENV=production
+PORT=3000
+PUBLIC_BASE_URL=https://funkparcours.oeradio.at
+JWT_SECRET=<openssl rand -hex 32>
+COOKIE_SECURE=true
+POSTGRES_USER=funk
+POSTGRES_PASSWORD=<starkes-passwort>
+POSTGRES_DB=funkparcours
+EOF
+```
+`deploy.sh` überschreibt diese `.env` **niemals**.
+
+### Deploy
+
+Lokal `.env.deploy` aus `.env.deploy.example` anlegen, dann:
+
+```bash
+./deploy.sh
+```
+Ablauf (idempotent, gefahrlose Re-Runs): Vorbedingungen (sauberer Git-Stand, Branch, SSH)
+→ Code auf den Host (git pull falls Remote-Klon, sonst rsync) → `docker compose build`
+→ Migrations als One-shot → `up -d` → Health-Check gegen den internen Port (Abbruch mit
+Exit≠0 bei Fehler) → `docker image prune`. Build standardmäßig **auf dem Host** (kein
+Registry-Zwang; ghcr optional).
+
+### Cloudflared-Ingress
+
+`docker-compose.prod.yml` bindet die App auf **`127.0.0.1:3000`**. Wie cloudflared an die App
+kommt, hängt von der Betriebsart auf dem Host ab — **auf dem Host prüfen** und die passende
+Variante wählen:
+
+```bash
+# läuft cloudflared als Host-Dienst oder als Container?
+systemctl status cloudflared 2>/dev/null
+docker ps --filter name=cloudflared
+# lokal gemanagter Tunnel hat eine config.yml:
+sudo find /etc/cloudflared ~/.cloudflared -name 'config.yml' 2>/dev/null
+```
+
+**A — Lokal gemanagter Tunnel als Host-Dienst (`config.yml`):** App auf `127.0.0.1:3000`
+lassen, Ingress-Regel **vor** der catch-all-Regel ergänzen:
+
+```yaml
+# /etc/cloudflared/config.yml
+ingress:
+  - hostname: funkparcours.oeradio.at
+    service: http://127.0.0.1:3000
+  # ... weitere bestehende Regeln ...
+  - service: http_status:404        # catch-all bleibt letzte Regel
+```
+DNS-Route + Reload:
+```bash
+cloudflared tunnel route dns <tunnel-name> funkparcours.oeradio.at
+sudo systemctl reload cloudflared      # oder: cloudflared tunnel ingress validate
+```
+
+**B — cloudflared als Container:** App nicht auf Loopback binden, sondern beide an dasselbe
+Docker-Netz hängen und per Service-Name zeigen. In `docker-compose.prod.yml` die
+`ports: 127.0.0.1:3000:3000`-Zeile beim `app`-Service entfernen, dem Netz des
+cloudflared-Containers beitreten, und in der Tunnel-Config:
+```yaml
+  - hostname: funkparcours.oeradio.at
+    service: http://funkparcours-app:3000
+```
+
+**C — Remote gemanagter Tunnel (Dashboard/API):** Ingress liegt nicht lokal. Im Cloudflare
+Zero-Trust-Dashboard → Networks → Tunnels → (Tunnel) → **Public Hostname hinzufügen**:
+`funkparcours.oeradio.at` → Service `HTTP` → `127.0.0.1:3000` (Host-Dienst) bzw.
+`funkparcours-app:3000` (Container). DNS legt Cloudflare automatisch an.
+
+> Welche Variante auf host-node-02 aktiv ist, **vor dem ersten Deploy verifizieren** und das
+> genutzte Snippet hier festhalten.
+
+### Backup / Restore
+
+```bash
+# Backup
+ssh achildrenmile@host-node-02 \
+  "cd /home/achildrenmile/funkparcours && docker compose -f docker-compose.prod.yml exec -T postgres \
+   pg_dump -U funk funkparcours" > backup-$(date +%F).sql
+# Restore
+cat backup-YYYY-MM-DD.sql | ssh achildrenmile@host-node-02 \
+  "cd /home/achildrenmile/funkparcours && docker compose -f docker-compose.prod.yml exec -T postgres \
+   psql -U funk -d funkparcours"
+```
+
+### Rollback
+
+```bash
+# git-Modus: auf dem Host auf vorherigen Stand zurück, dann neu deployen
+ssh achildrenmile@host-node-02 "cd /home/achildrenmile/funkparcours && git reset --hard <commit>"
+./deploy.sh
+# Das Postgres-Volume (pgdata) bleibt erhalten; Migrations sind additiv.
+```
+
+### Troubleshooting
+
+- **502 von Cloudflare:** App-Container unten oder falsche Service-URL im Ingress.
+  `docker compose -f docker-compose.prod.yml logs app`, Ziel-Port prüfen.
+- **Health-Check schlägt fehl:** meist DB nicht erreichbar — `DATABASE_URL`/Postgres-Health
+  prüfen. Migrations-Log im `app`-Start ansehen.
+- **Cookies/Login gehen nicht:** `COOKIE_SECURE=true` braucht HTTPS (über Cloudflare ok),
+  `PUBLIC_BASE_URL` muss der öffentlichen URL entsprechen.
