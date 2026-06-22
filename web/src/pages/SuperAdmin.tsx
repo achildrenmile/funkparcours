@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api, ApiError } from "../api";
 import { Header, Page, Banner, fmt } from "../components";
 import { CrossIcon } from "../icons";
+import { rememberGame } from "../recent";
 
 export function SuperAdmin() {
   const [authed, setAuthed] = useState<boolean | null>(null);
@@ -93,9 +95,21 @@ function Stat({ label, value }: { label: string; value: number }) {
 }
 
 function Overview({ onLogout }: { onLogout: () => void }) {
+  const nav = useNavigate();
   const [data, setData] = useState<any>(null);
   const [err, setErr] = useState<string | null>(null);
   const [open, setOpen] = useState<string | null>(null);
+
+  // mint an admin session for this game, then jump into its admin views
+  const manage = async (g: any) => {
+    try {
+      const r = await api.post<{ code: string; status: string }>(`/api/super/games/${g.id}/admin-session`);
+      rememberGame(r.code, g.title);
+      nav(`/admin/${r.code}${r.status === "running" ? "/dashboard" : ""}`);
+    } catch (e) {
+      setErr(String(e));
+    }
+  };
 
   const load = useCallback(async () => {
     try {
@@ -163,7 +177,14 @@ function Overview({ onLogout }: { onLogout: () => void }) {
           </thead>
           <tbody>
             {data.games.map((g: any) => (
-              <RowGroup key={g.id} g={g} open={open === g.id} toggle={() => setOpen(open === g.id ? null : g.id)} del={del} />
+              <RowGroup
+                key={g.id}
+                g={g}
+                open={open === g.id}
+                toggle={() => setOpen(open === g.id ? null : g.id)}
+                del={del}
+                manage={manage}
+              />
             ))}
           </tbody>
         </table>
@@ -173,7 +194,19 @@ function Overview({ onLogout }: { onLogout: () => void }) {
   );
 }
 
-function RowGroup({ g, open, toggle, del }: { g: any; open: boolean; toggle: () => void; del: (id: string, t: string) => void }) {
+function RowGroup({
+  g,
+  open,
+  toggle,
+  del,
+  manage,
+}: {
+  g: any;
+  open: boolean;
+  toggle: () => void;
+  del: (id: string, t: string) => void;
+  manage: (g: any) => void;
+}) {
   const [detail, setDetail] = useState<any>(null);
   useEffect(() => {
     if (open && !detail) api.get(`/api/super/games/${g.id}`).then(setDetail).catch(() => {});
@@ -192,17 +225,28 @@ function RowGroup({ g, open, toggle, del }: { g: any; open: boolean; toggle: () 
         <td className="pr-2 text-right">{g.submissions}</td>
         <td className="pr-2 whitespace-nowrap">{date(g.createdAt)}</td>
         <td className="pr-2 whitespace-nowrap">{date(g.expiresAt)}</td>
-        <td className="text-right">
-          <button
-            className="btn-ghost px-2 min-h-[2rem]"
-            aria-label="löschen"
-            onClick={(e) => {
-              e.stopPropagation();
-              del(g.id, g.title);
-            }}
-          >
-            <CrossIcon size={16} />
-          </button>
+        <td className="text-right whitespace-nowrap">
+          <div className="inline-flex gap-1 justify-end">
+            <button
+              className="btn-primary px-3 min-h-[2rem] text-xs"
+              onClick={(e) => {
+                e.stopPropagation();
+                manage(g);
+              }}
+            >
+              Verwalten
+            </button>
+            <button
+              className="btn-ghost px-2 min-h-[2rem]"
+              aria-label="löschen"
+              onClick={(e) => {
+                e.stopPropagation();
+                del(g.id, g.title);
+              }}
+            >
+              <CrossIcon size={16} />
+            </button>
+          </div>
         </td>
       </tr>
       {open && (
