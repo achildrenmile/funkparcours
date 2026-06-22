@@ -18,6 +18,10 @@ import { hub } from "../rooms.js";
 const { games, gameParts, groups } = schema;
 
 const COOKIE = "fp_admin";
+// Sliding session: long-lived so the organiser stays logged in for a whole
+// exercise; every authenticated request re-issues the cookie to extend it.
+const SESSION_MAX_AGE = 7 * 24 * 3600; // seconds
+const SESSION_EXPIRES_IN = "7d";
 
 async function requireAdmin(req: FastifyRequest, reply: FastifyReply): Promise<AdminClaims> {
   const token = req.cookies[COOKIE];
@@ -25,18 +29,25 @@ async function requireAdmin(req: FastifyRequest, reply: FastifyReply): Promise<A
     reply.code(401).send({ error: "not authenticated" });
     throw new Error("unauth");
   }
+  let claims: AdminClaims;
   try {
-    const claims = req.server.jwt.verify<AdminClaims>(token);
-    const code = (req.params as { code: string }).code;
-    if (claims.code !== code) {
-      reply.code(403).send({ error: "wrong game" });
-      throw new Error("forbidden");
-    }
-    return claims;
+    claims = req.server.jwt.verify<AdminClaims>(token);
   } catch {
     reply.code(401).send({ error: "invalid session" });
     throw new Error("unauth");
   }
+  const code = (req.params as { code: string }).code;
+  if (claims.code !== code) {
+    reply.code(403).send({ error: "wrong game" });
+    throw new Error("forbidden");
+  }
+  // slide the session forward on activity
+  const fresh = req.server.jwt.sign(
+    { gameId: claims.gameId, code: claims.code, role: "admin" } satisfies AdminClaims,
+    { expiresIn: SESSION_EXPIRES_IN },
+  );
+  setAdminCookie(reply, fresh);
+  return claims;
 }
 
 function joinLinks(gs: (typeof groups.$inferSelect)[]) {
@@ -73,7 +84,10 @@ export async function adminRoutes(app: FastifyInstance) {
       .insert(games)
       .values({ code, adminPasswordHash: hash, title: body.title, expiresAt })
       .returning();
-    const tok = req.server.jwt.sign({ gameId: game.id, code, role: "admin" } satisfies AdminClaims);
+    const tok = req.server.jwt.sign(
+      { gameId: game.id, code, role: "admin" } satisfies AdminClaims,
+      { expiresIn: SESSION_EXPIRES_IN },
+    );
     setAdminCookie(reply, tok);
     return reply.send({ code, gameId: game.id });
   });
@@ -86,9 +100,26 @@ export async function adminRoutes(app: FastifyInstance) {
     if (!game || !(await verifyPassword(game.adminPasswordHash, password))) {
       return reply.code(401).send({ error: "falscher Code oder Passwort" });
     }
-    const tok = req.server.jwt.sign({ gameId: game.id, code, role: "admin" } satisfies AdminClaims);
+    const tok = req.server.jwt.sign(
+      { gameId: game.id, code, role: "admin" } satisfies AdminClaims,
+      { expiresIn: SESSION_EXPIRES_IN },
+    );
     setAdminCookie(reply, tok);
-    return reply.send({ ok: true, gameId: game.id });
+    return reply.send({ ok: true, gameId: game.id, title: game.title });
+  });
+
+  // --- session check (is this browser still logged in for :code?) ---
+  app.get("/api/games/:code/me", async (req, reply) => {
+    const claims = await requireAdmin(req, reply);
+    const [game] = await db.select().from(games).where(eq(games.id, claims.gameId));
+    if (!game) return reply.code(404).send({ error: "not found" });
+    return reply.send({ ok: true, code: game.code, title: game.title, status: game.status });
+  });
+
+  // --- logout (clear this game's admin cookie) ---
+  app.post("/api/games/:code/logout", async (_req, reply) => {
+    reply.clearCookie(COOKIE, { path: "/" });
+    return reply.send({ ok: true });
   });
 
   // --- read full game (config view) ---
@@ -272,7 +303,7 @@ function setAdminCookie(reply: FastifyReply, token: string) {
     sameSite: "lax",
     secure: env.COOKIE_SECURE,
     path: "/",
-    maxAge: 12 * 3600,
+    maxAge: SESSION_MAX_AGE,
   });
 }
 

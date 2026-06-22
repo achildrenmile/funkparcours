@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { api, ApiError } from "../api";
 import { Header, Page, Banner, Pct, fmt } from "../components";
 import { useGameSocket } from "../ws";
+import { rememberGame } from "../recent";
 
 export function AdminDashboard() {
   const { code } = useParams();
@@ -12,12 +13,23 @@ export function AdminDashboard() {
 
   const load = useCallback(async () => {
     try {
-      setData(await api.get(`/api/games/${code}/dashboard`));
+      const d = await api.get<any>(`/api/games/${code}/dashboard`);
+      rememberGame(code!, d.game.title);
+      setData(d);
     } catch (e) {
-      if (e instanceof ApiError && e.status === 401) nav("/");
+      if (e instanceof ApiError && e.status === 401) nav(`/?code=${code}`);
       else setErr(String(e));
     }
   }, [code, nav]);
+
+  const logout = async () => {
+    try {
+      await api.post(`/api/games/${code}/logout`);
+    } catch {
+      /* ignore */
+    }
+    nav("/");
+  };
 
   useEffect(() => {
     load();
@@ -51,6 +63,12 @@ export function AdminDashboard() {
           <a className="btn-ghost ml-auto" href={`/api/games/${code}/stats.csv`}>
             CSV export
           </a>
+          <button className="btn-ghost" onClick={() => nav(`/admin/${code}`)}>
+            Konfiguration
+          </button>
+          <button className="btn-ghost" onClick={logout}>
+            Abmelden
+          </button>
         </div>
 
         {/* Current part status */}
