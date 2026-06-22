@@ -60,7 +60,10 @@ export function AdminDashboard() {
             </>
           )}
           {status === "finished" && <Banner kind="ok">Spiel beendet.</Banner>}
-          <a className="btn-ghost ml-auto" href={`/api/games/${code}/stats.csv`}>
+          <button className="btn-ghost ml-auto" onClick={() => nav(`/admin/${code}/links`)}>
+            Stationen &amp; Links
+          </button>
+          <a className="btn-ghost" href={`/api/games/${code}/stats.csv`}>
             CSV export
           </a>
           <button className="btn-ghost" onClick={() => nav(`/admin/${code}`)}>
