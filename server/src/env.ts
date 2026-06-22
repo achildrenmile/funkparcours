@@ -18,6 +18,9 @@ const schema = z.object({
   RATE_LIMIT_MAX: z.coerce.number().default(120),
   RATE_LIMIT_WINDOW: z.string().default("1 minute"),
   DEFAULT_EXPIRY_DAYS: z.coerce.number().default(30),
+  // Superadmin operator panel (sees ALL games). Disabled unless a password is set.
+  SUPERADMIN_USER: z.string().default("superadmin"),
+  SUPERADMIN_PASSWORD: z.string().default(""),
 });
 
 const parsed = schema.parse(process.env);
@@ -28,4 +31,5 @@ export const env = {
     parsed.DATABASE_URL ??
     `postgres://${parsed.POSTGRES_USER}:${parsed.POSTGRES_PASSWORD}@${parsed.POSTGRES_HOST}:${parsed.POSTGRES_PORT}/${parsed.POSTGRES_DB}`,
   isProd: parsed.NODE_ENV === "production",
+  superadminEnabled: parsed.SUPERADMIN_PASSWORD.length > 0,
 };
