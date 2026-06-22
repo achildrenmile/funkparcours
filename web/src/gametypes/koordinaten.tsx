@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import type { LeitViewProps, TruppViewProps, ConfigFormProps } from "./registry";
+import { MarkerIcon } from "../icons";
 
 const ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const colLabels = (n: number) => Array.from({ length: n }, (_, i) => ALPHA[i]);
@@ -17,7 +18,7 @@ function Grid({
 }) {
   return (
     <div className="inline-block overflow-auto max-w-full">
-      <div className="grid gap-0.5" style={{ gridTemplateColumns: `1.5rem repeat(${cols.length}, 2rem)` }}>
+      <div className="grid gap-1" style={{ gridTemplateColumns: `1.5rem repeat(${cols.length}, 2.25rem)` }}>
         <div />
         {cols.map((c) => (
           <div key={c} className="text-center text-xs font-bold text-slate-500">{c}</div>
@@ -48,11 +49,11 @@ export function KoordinatenLeit({ payload }: LeitViewProps) {
       rows={payload.rowLabels}
       cell={(k) => (
         <div
-          className={`w-8 h-8 rounded-sm border flex items-center justify-center text-sm ${
-            markers.has(k) ? "bg-funk-600 border-funk-700 text-white" : "bg-slate-50 border-slate-200"
+          className={`w-9 h-9 rounded-md border flex items-center justify-center ${
+            markers.has(k) ? "bg-brand border-brand-dark text-white" : "bg-slate-50 border-slate-200"
           }`}
         >
-          {markers.has(k) ? "✚" : ""}
+          {markers.has(k) && <MarkerIcon size={16} />}
         </div>
       )}
     />
@@ -91,15 +92,15 @@ export function KoordinatenTrupp({ config, onSubmit, submitting, lastResult }: T
                     ? "bg-red-400 border-red-500 text-white"
                     : "bg-slate-50 border-slate-200"
               : marks.has(k)
-                ? "bg-funk-600 border-funk-700 text-white"
+                ? "bg-brand border-brand-dark text-white"
                 : "bg-white border-slate-300 hover:bg-slate-50";
             return (
               <button
                 disabled={locked}
                 onClick={() => toggle(k)}
-                className={`w-8 h-8 rounded-sm border text-sm ${cls}`}
+                className={`w-9 h-9 rounded-md border inline-flex items-center justify-center ${cls}`}
               >
-                {(locked ? h === "hit" || h === "false" : marks.has(k)) ? "✚" : ""}
+                {(locked ? h === "hit" || h === "false" : marks.has(k)) && <MarkerIcon size={16} />}
               </button>
             );
           }}

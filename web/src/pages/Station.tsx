@@ -4,6 +4,7 @@ import { api, ApiError } from "../api";
 import { Header, Page, Banner, Timer, fmt } from "../components";
 import { useGameSocket } from "../ws";
 import { getFeGameType } from "../gametypes/registry";
+import { BroadcastIcon, CheckIcon } from "../icons";
 
 export function Station() {
   const { token } = useParams();
@@ -74,14 +75,18 @@ function LeitPanel({ token, part, reload }: { token: string; part: any; reload: 
 
   if (!part.startedAt) {
     return (
-      <div className="card text-center space-y-4">
-        <h2 className="text-xl font-bold">{part.label}</h2>
-        <p className="text-slate-600">
+      <div className="card text-center space-y-5 py-8">
+        <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-brand/10 text-brand mx-auto">
+          <BroadcastIcon size={30} />
+        </div>
+        <h2 className="text-2xl font-bold">{part.label}</h2>
+        <p className="text-slate-600 max-w-md mx-auto">
           Bereit zur Übertragung. Mit „Übertragung starten" wird die Vorlage aufgedeckt und der Timer läuft.
           Gib die Aufgabe danach über Funk durch.
         </p>
-        <button className="btn-primary text-lg px-8 py-3" disabled={busy} onClick={startTx}>
-          📡 Übertragung starten
+        <button className="btn-primary text-lg px-8 w-full sm:w-auto" disabled={busy} onClick={startTx}>
+          <BroadcastIcon size={20} />
+          Übertragung starten
         </button>
       </div>
     );
@@ -91,7 +96,7 @@ function LeitPanel({ token, part, reload }: { token: string; part: any; reload: 
     <div className="space-y-3">
       <div className="card flex items-center justify-between">
         <h2 className="font-bold">{part.label} — Sendebild</h2>
-        <div className="text-lg">⏱ <Timer startedAt={part.startedAt} /></div>
+        <div className="text-lg"><Timer startedAt={part.startedAt} /></div>
       </div>
       <div className="card overflow-auto">
         {ft && part.payload ? <ft.LeitView payload={part.payload} /> : <p>Vorlage wird geladen…</p>}
@@ -142,9 +147,12 @@ function TruppPanel({
 
   if (result) {
     return (
-      <div className="card text-center space-y-3">
-        <h2 className="text-xl font-bold">Abgegeben ✅</h2>
-        <div className="text-4xl font-bold text-funk-700">{Math.round(result.accuracy * 100)}%</div>
+      <div className="card text-center space-y-3 py-7">
+        <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-sage/30 text-emerald-700 mx-auto">
+          <CheckIcon size={26} />
+        </div>
+        <h2 className="text-xl font-bold">Abgegeben</h2>
+        <div className="text-5xl font-extrabold text-brand">{Math.round(result.accuracy * 100)}%</div>
         <p className="text-slate-600">
           Zeit {fmt(result.durationMs)} · Punkte {Number(result.score).toFixed(2)}
         </p>
@@ -162,7 +170,7 @@ function TruppPanel({
     <div className="space-y-3">
       <div className="card flex items-center justify-between">
         <h2 className="font-bold">{part.label} — Empfangsbild</h2>
-        <div className="text-lg">⏱ <Timer startedAt={part.startedAt} /></div>
+        <div className="text-lg"><Timer startedAt={part.startedAt} /></div>
       </div>
       {err && <Banner kind="warn">{err}</Banner>}
       {ft ? (
