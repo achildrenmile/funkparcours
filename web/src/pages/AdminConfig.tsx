@@ -111,7 +111,7 @@ export function AdminConfig() {
 
   return (
     <>
-      <Header title="Konfiguration" sub={`Code ${code}`} />
+      <Header title="Konfiguration" sub={`Code ${code}`} help="admin-config" />
       <Page>
         <div className="flex items-center justify-between">
           <span className="text-sm text-slate-500">

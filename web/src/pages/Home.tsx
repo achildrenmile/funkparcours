@@ -47,7 +47,7 @@ export function Home() {
 
   return (
     <>
-      <Header title="Übungsleitung" />
+      <Header title="Übungsleitung" help="home" />
       <Page>
         {prefill && mode === "login" && (
           <Banner kind="info">

@@ -48,7 +48,7 @@ export function AdminLinks() {
 
   return (
     <>
-      <Header title="Stationen & Links" sub={`Code ${code}`} />
+      <Header title="Stationen & Links" sub={`Code ${code}`} help="admin-links" />
       <Page>
         {err && <Banner kind="warn">{err}</Banner>}
 

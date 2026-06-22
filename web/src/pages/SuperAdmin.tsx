@@ -25,7 +25,7 @@ export function SuperAdmin() {
   if (authed === null) return <Page>Laden…</Page>;
   return (
     <>
-      <Header title="Superadmin" sub="Alle Spiele" />
+      <Header title="Superadmin" sub="Alle Spiele" help="super" />
       <Page>
         {disabled ? (
           <Banner kind="warn">

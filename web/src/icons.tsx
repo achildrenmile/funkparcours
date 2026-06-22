@@ -40,6 +40,14 @@ export const BroadcastIcon = ({ className, size }: P) => (
   </svg>
 );
 
+export const HelpIcon = ({ className, size }: P) => (
+  <svg {...base(size)} className={className} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M9.2 9.2a2.8 2.8 0 015.4 1c0 1.9-2.8 2.5-2.8 2.5" />
+    <path d="M12 17h.01" />
+  </svg>
+);
+
 export const RadioIcon = ({ className, size }: P) => (
   <svg {...base(size)} className={className} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M16 6L7 9" />
