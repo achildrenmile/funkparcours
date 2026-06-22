@@ -235,7 +235,15 @@ export function HelpButton({ topic, autoOpenOnce }: { topic: HelpTopic; autoOpen
                 <CrossIcon size={20} />
               </button>
             </div>
-            <div className="p-4 space-y-5">{entry.body}</div>
+            <div className="p-4 space-y-5">
+              <img
+                src="/funkparcours-hero.png"
+                alt="FunkParcours"
+                className="w-full rounded-xl border border-slate-200 shadow-sm"
+                loading="lazy"
+              />
+              {entry.body}
+            </div>
           </div>
         </div>
       )}
