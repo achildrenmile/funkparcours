@@ -11,6 +11,9 @@ RUN npm ci
 COPY shared/ shared/
 COPY server/ server/
 COPY web/ web/
+# app version (git short sha) baked into the web build for the footer
+ARG APP_VERSION=dev
+ENV APP_VERSION=$APP_VERSION
 RUN npm run build -w @funkparcours/shared \
  && npm run build -w @funkparcours/server \
  && npm run build -w @funkparcours/web

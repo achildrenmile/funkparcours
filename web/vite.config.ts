@@ -4,6 +4,9 @@ import react from "@vitejs/plugin-react";
 // Dev: proxy API + WS to the Fastify server on :3000.
 export default defineConfig({
   plugins: [react()],
+  define: {
+    __APP_VERSION__: JSON.stringify(process.env.APP_VERSION || "dev"),
+  },
   server: {
     port: 5173,
     proxy: {

@@ -4,10 +4,10 @@ import { ClockIcon } from "./icons";
 export function Header({ title, sub }: { title?: string; sub?: string }) {
   return (
     <header className="bg-ink text-white shadow-lg">
-      <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
-        <a href="/" className="flex items-center gap-2.5 shrink-0">
-          <img src="/oeradio-logo.webp" alt="OERadio" className="h-9 w-auto" />
-          <span className="font-bold text-base hidden sm:block whitespace-nowrap">
+      <div className="max-w-4xl mx-auto px-4 h-20 flex items-center justify-between gap-3">
+        <a href="/" className="flex items-center gap-3 shrink-0">
+          <img src="/oeradio-logo.webp" alt="OERadio" className="h-14 w-auto" />
+          <span className="font-bold text-lg hidden sm:block whitespace-nowrap">
             Funk<span className="text-brand-light">Parcours</span>
           </span>
         </a>
@@ -24,7 +24,50 @@ export function Header({ title, sub }: { title?: string; sub?: string }) {
 }
 
 export function Page({ children }: { children: React.ReactNode }) {
-  return <div className="max-w-4xl mx-auto p-4 sm:p-5 space-y-4">{children}</div>;
+  return (
+    <div className="min-h-[calc(100dvh-5rem)] flex flex-col">
+      <div className="max-w-4xl w-full mx-auto p-4 sm:p-5 space-y-4 flex-1">{children}</div>
+      <Footer />
+    </div>
+  );
+}
+
+const APP_VERSION: string = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "dev";
+
+export function Footer() {
+  const link = "text-brand hover:underline";
+  const dot = <span aria-hidden="true">•</span>;
+  const bar = <span aria-hidden="true">|</span>;
+  return (
+    <footer className="border-t border-slate-200 bg-white/60 mt-6">
+      <div className="max-w-4xl mx-auto px-4 py-3">
+        <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-slate-500">
+          <span className="font-medium text-slate-600">FunkParcours v{APP_VERSION}</span>
+          {dot}
+          <a className={link} href="https://oeradio.at/" target="_blank" rel="noopener noreferrer">
+            Teil von OE Radio Tools
+          </a>
+          {dot}
+          <a className={link} href="https://oeradio.at/impressum/" target="_blank" rel="noopener noreferrer">
+            Impressum
+          </a>
+          {bar}
+          <a className={link} href="https://oeradio.at/datenschutz/" target="_blank" rel="noopener noreferrer">
+            Datenschutz
+          </a>
+          {bar}
+          <a
+            className={link}
+            href="https://github.com/achildrenmile/funkparcours"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub
+          </a>
+        </div>
+      </div>
+    </footer>
+  );
 }
 
 /** Live timer counting up from a server-provided ISO start time. */
