@@ -8,8 +8,8 @@ export const scoringConfigSchema = z.discriminatedUnion("mode", [
   }),
   z.object({
     mode: z.literal("weighted"),
-    w_acc: z.number().min(0).default(0.6),
-    w_speed: z.number().min(0).default(0.4),
+    w_acc: z.number().min(0).default(0.7),
+    w_speed: z.number().min(0).default(0.3),
     t_min: z.number().min(0).default(10_000),
     t_max: z.number().min(1).default(120_000),
   }),
