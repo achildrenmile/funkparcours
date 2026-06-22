@@ -57,9 +57,9 @@ const REGISTRY: Record<string, FeGameType> = {
     id: "meldung",
     label: "Meldung",
     defaultConfig: {
-      fields: ["von", "an", "datum_zeit", "ort", "lage", "anzahl_personen", "prioritaet", "meldetext"],
+      fields: ["von", "an", "ort", "lage", "anzahl_personen", "prioritaet"],
       fuzzy: true,
-      fuzzyThreshold: 0.85,
+      fuzzyThreshold: 0.8,
     },
     LeitView: MeldungLeit,
     TruppView: MeldungTrupp,

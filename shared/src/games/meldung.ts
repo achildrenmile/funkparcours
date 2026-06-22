@@ -30,10 +30,13 @@ const SENTENCES = [
 ];
 
 export const meldungConfigSchema = z.object({
-  fields: z.array(z.enum(MELDUNG_FIELD_KEYS as [string, ...string[]])).min(1).default([...MELDUNG_FIELD_KEYS]),
+  fields: z
+    .array(z.enum(MELDUNG_FIELD_KEYS as [string, ...string[]]))
+    .min(1)
+    .default(["von", "an", "ort", "lage", "anzahl_personen", "prioritaet"]),
   /** allow small typos via normalized Levenshtein ratio */
   fuzzy: z.boolean().default(true),
-  fuzzyThreshold: z.number().min(0).max(1).default(0.85),
+  fuzzyThreshold: z.number().min(0).max(1).default(0.8),
 });
 export type MeldungConfig = z.infer<typeof meldungConfigSchema>;
 

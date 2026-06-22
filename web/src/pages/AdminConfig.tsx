@@ -21,7 +21,7 @@ type Scoring =
 const SCORING_DEFAULTS: Record<string, Scoring> = {
   time: { mode: "time" },
   accuracy_gate: { mode: "accuracy_gate", min_accuracy: 0.9 },
-  weighted: { mode: "weighted", w_acc: 0.6, w_speed: 0.4, t_min: 10000, t_max: 120000 },
+  weighted: { mode: "weighted", w_acc: 0.7, w_speed: 0.3, t_min: 10000, t_max: 120000 },
   points_rank: { mode: "points_rank", min_accuracy: 0 },
 };
 
