@@ -7,7 +7,7 @@
     -webkit-text-size-adjust: 100%;
   }
   body {
-    @apply bg-slate-100 text-ink antialiased overflow-x-hidden;
+    @apply bg-slate-100 text-ink antialiased overflow-x-hidden font-sans;
     background-image: radial-gradient(135% 100% at 50% 0%, #e8edf3 0%, #f1f5f9 45%, #eef1f5 100%);
     min-height: 100dvh;
     /* iOS safe areas */

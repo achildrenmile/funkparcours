@@ -29,6 +29,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        APP_VERSION: ${APP_VERSION:-dev}
     image: funkparcours-app:local
     container_name: funkparcours-app
     restart: unless-stopped
@@ -42,6 +44,8 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@funkparcours-db:5432/${POSTGRES_DB}
+      SUPERADMIN_USER: ${SUPERADMIN_USER:-superadmin}
+      SUPERADMIN_PASSWORD: ${SUPERADMIN_PASSWORD:-}
     # Loopback publish lets deploy.sh health-check the internal port.
     ports:
       - "127.0.0.1:3000:3000"

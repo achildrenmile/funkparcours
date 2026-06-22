@@ -60,8 +60,9 @@ ok ".env auf dem Host vorhanden (bleibt unangetastet)"
 DC="docker compose --env-file .env -f $COMPOSE_FILE"
 
 # --- build + migrate + up ---
-log "Image bauen"
-$SSH "cd '$REMOTE_DIR' && $DC build"
+APP_VERSION="$(git rev-parse --short HEAD)"
+log "Image bauen (Version $APP_VERSION)"
+$SSH "cd '$REMOTE_DIR' && APP_VERSION=$APP_VERSION $DC build"
 
 log "Migrations laufen lassen (one-shot)"
 $SSH "cd '$REMOTE_DIR' && $DC run --rm app node server/dist/db/migrate.js"

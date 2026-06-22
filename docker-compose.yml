@@ -32,6 +32,8 @@ services:
       JWT_SECRET: ${JWT_SECRET:-dev-insecure-change-me}
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       DATABASE_URL: postgres://${POSTGRES_USER:-funk}:${POSTGRES_PASSWORD:-funk}@postgres:5432/${POSTGRES_DB:-funkparcours}
+      SUPERADMIN_USER: ${SUPERADMIN_USER:-superadmin}
+      SUPERADMIN_PASSWORD: ${SUPERADMIN_PASSWORD:-}
     ports:
       - "3000:3000"
 
