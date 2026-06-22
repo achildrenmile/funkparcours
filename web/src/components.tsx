@@ -1,7 +1,18 @@
 import { useEffect, useState } from "react";
 import { ClockIcon } from "./icons";
+import { HelpButton, type HelpTopic } from "./help";
 
-export function Header({ title, sub }: { title?: string; sub?: string }) {
+export function Header({
+  title,
+  sub,
+  help,
+  autoOpenHelp,
+}: {
+  title?: string;
+  sub?: string;
+  help?: HelpTopic;
+  autoOpenHelp?: boolean;
+}) {
   return (
     <header className="bg-ink text-white shadow-lg">
       <div className="max-w-4xl mx-auto px-4 h-24 flex items-center justify-between gap-3">
@@ -11,12 +22,15 @@ export function Header({ title, sub }: { title?: string; sub?: string }) {
             Funk<span className="text-brand-light">Parcours</span>
           </span>
         </a>
-        {(title || sub) && (
-          <div className="text-right min-w-0 flex-1">
-            {title && <div className="font-semibold leading-tight truncate">{title}</div>}
-            {sub && <div className="text-xs text-slate-300 truncate">{sub}</div>}
-          </div>
-        )}
+        <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
+          {(title || sub) && (
+            <div className="text-right min-w-0">
+              {title && <div className="font-semibold leading-tight truncate">{title}</div>}
+              {sub && <div className="text-xs text-slate-300 truncate">{sub}</div>}
+            </div>
+          )}
+          {help && <HelpButton topic={help} autoOpenOnce={autoOpenHelp} />}
+        </div>
       </div>
       <div className="h-1 bg-brand" />
     </header>

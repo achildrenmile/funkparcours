@@ -43,7 +43,7 @@ export function AdminDashboard() {
 
   return (
     <>
-      <Header title="Live-Dashboard" sub={`Code ${code} · ${status}`} />
+      <Header title="Live-Dashboard" sub={`Code ${code} · ${status}`} help="admin-dashboard" />
       <Page>
         <div className="flex flex-wrap gap-2 items-center">
           {status === "running" && (

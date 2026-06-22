@@ -32,7 +32,12 @@ export function Station() {
 
   return (
     <>
-      <Header title={roleLabel} sub={`${state.gameTitle} · ${state.groupName}`} />
+      <Header
+        title={roleLabel}
+        sub={`${state.gameTitle} · ${state.groupName}`}
+        help={state.role === "leit" ? "leit" : "trupp"}
+        autoOpenHelp
+      />
       <Page>
         {state.gameStatus !== "running" && (
           <Banner kind="info">
