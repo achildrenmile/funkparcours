@@ -222,8 +222,21 @@ ihren **eigenen, lokal gemanagten Tunnel** mit `cloudflared/config.yml` + Creden
 die App als `http://funkparcours-app:3000`. Der cloudflared-Dienst liegt hinter dem
 Compose-Profil **`tunnel`**, damit App+DB schon ohne Tunnel-Creds deployen.
 
-**Deploy-Stand:** App + Postgres laufen (intern `127.0.0.1:3000`, Health ok). Offen ist
-**ein** Schritt, der Cloudflare-Zugang braucht (auf dem Host liegt kein `cert.pem`/API-Token):
+**Status: live** unter `https://funkparcours.oeradio.at` (REST + WebSocket end-to-end
+verifiziert). Umgesetzt wurde Variante „bestehenden Tunnel mitnutzen": Statt eines eigenen
+Tunnels hängt `funkparcours-app` zusätzlich am Docker-Netz `<tunnel-network>`
+(in `docker-compose.prod.yml` als external network deklariert), und der laufende
+`<tunnel-container>` bekam eine Ingress-Regel `funkparcours.oeradio.at →
+http://funkparcours-app:3000` (vor der catch-all-Regel). DNS: proxied CNAME
+`funkparcours` → `<tunnel-UUID>.cfargotunnel.com`.
+
+> **Wichtig:** cloudflared auf <deploy-host> lädt Config **nicht** per `SIGHUP` sauber neu
+> (Tunnel ging dabei auf 502) — Config-Änderungen mit **`docker restart <tunnel-container>`**
+> übernehmen, nicht mit HUP.
+
+Der ursprünglich vorgesehene dedizierte Tunnel (eigener `funkparcours-cloudflared`, Profil
+`tunnel`) bleibt als Alternative im Compose; dafür wäre der folgende einmalige Schritt nötig
+(braucht Cloudflare-Login/Token — auf dem Host liegt kein `cert.pem`):
 
 ```bash
 # 1) einmalig: Tunnel-Verwaltung autorisieren (öffnet eine URL im Browser -> cert.pem)
