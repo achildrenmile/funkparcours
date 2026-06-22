@@ -4,6 +4,7 @@ import { eq, inArray } from "drizzle-orm";
 import { timingSafeEqual } from "node:crypto";
 import { db, schema } from "../db/index.js";
 import { env } from "../env.js";
+import type { AdminClaims } from "../auth.js";
 
 const { games, gameParts, groups, rounds, submissions, events } = schema;
 
@@ -206,6 +207,27 @@ export async function superadminRoutes(app: FastifyInstance) {
       })),
       events: evs,
     });
+  });
+
+  // --- impersonate: mint a normal admin session for any game, so the
+  //     superadmin can fully manage it (config/start/dashboard/links) ---
+  app.post("/api/super/games/:id/admin-session", async (req, reply) => {
+    requireSuper(req, reply);
+    const { id } = req.params as { id: string };
+    const [game] = await db.select().from(games).where(eq(games.id, id));
+    if (!game) return reply.code(404).send({ error: "not found" });
+    const tok = req.server.jwt.sign(
+      { gameId: game.id, code: game.code, role: "admin" } satisfies AdminClaims,
+      { expiresIn: "7d" },
+    );
+    reply.setCookie("fp_admin", tok, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: env.COOKIE_SECURE,
+      path: "/",
+      maxAge: 7 * 24 * 3600,
+    });
+    return reply.send({ ok: true, code: game.code, status: game.status });
   });
 
   // --- delete a game (cascades to parts/groups/rounds/submissions/events) ---
