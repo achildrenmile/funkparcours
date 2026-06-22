@@ -4,6 +4,7 @@ import { api, ApiError } from "../api";
 import { Header, Page, Banner } from "../components";
 import { getFeGameType, listFeGameTypes } from "../gametypes/registry";
 import { CrossIcon } from "../icons";
+import { rememberGame } from "../recent";
 
 interface PartDraft {
   type: string;
@@ -41,6 +42,7 @@ export function AdminConfig() {
   const load = async () => {
     try {
       const g = await api.get<any>(`/api/games/${code}`);
+      rememberGame(code!, g.game.title);
       setStatus(g.game.status);
       setTitle(g.game.title);
       setScoring(g.game.scoringConfig);
@@ -58,13 +60,22 @@ export function AdminConfig() {
       setLinks(g.links);
       setQr(g.qr);
     } catch (e) {
-      if (e instanceof ApiError && e.status === 401) nav("/");
+      if (e instanceof ApiError && e.status === 401) nav(`/?code=${code}`);
       else setErr(String(e));
     }
   };
   useEffect(() => {
     load();
   }, [code]);
+
+  const logout = async () => {
+    try {
+      await api.post(`/api/games/${code}/logout`);
+    } catch {
+      /* ignore */
+    }
+    nav("/");
+  };
 
   const addPart = (type: string) => {
     const ft = getFeGameType(type)!;
@@ -104,6 +115,14 @@ export function AdminConfig() {
     <>
       <Header title="Konfiguration" sub={`Code ${code}`} />
       <Page>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-slate-500">
+            Spiel-Code <b className="font-mono text-ink">{code}</b>
+          </span>
+          <button className="btn-ghost text-sm px-3 min-h-[2.25rem]" onClick={logout}>
+            Abmelden
+          </button>
+        </div>
         {!isDraft && (
           <Banner kind="info">
             Spiel läuft bereits.{" "}
