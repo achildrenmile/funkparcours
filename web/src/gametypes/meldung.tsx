@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { LeitViewProps, TruppViewProps, ConfigFormProps } from "./registry";
+import { CheckIcon, CrossIcon } from "../icons";
 
 const CATALOG: Record<string, { label: string; kind: string }> = {
   von: { label: "Von", kind: "callsign" },
@@ -45,7 +46,12 @@ export function MeldungTrupp({ config, onSubmit, submitting, lastResult }: Trupp
             <div key={k}>
               <label className="label flex justify-between">
                 <span>{def.label}</span>
-                {locked && <span>{fieldOk ? "✅" : "❌"}</span>}
+                {locked &&
+                  (fieldOk ? (
+                    <CheckIcon size={18} className="text-emerald-600" />
+                  ) : (
+                    <CrossIcon size={18} className="text-brand" />
+                  ))}
               </label>
               {def.kind === "priority" ? (
                 <select className="input" disabled={locked} value={values[k] ?? ""} onChange={(e) => set(k, e.target.value)}>

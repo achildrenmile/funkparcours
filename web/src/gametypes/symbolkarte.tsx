@@ -20,6 +20,7 @@ import {
   type Color,
 } from "./symbolGlyph";
 import type { LeitViewProps, TruppViewProps } from "./registry";
+import { MinusIcon } from "../icons";
 
 const ALPHA = "ABCDEFGHIJKL";
 const colLabels = (n: number) => Array.from({ length: n }, (_, i) => ALPHA[i]);
@@ -127,8 +128,8 @@ function DropCell({
     <div
       ref={setNodeRef}
       onClick={() => onTap(k)}
-      className={`relative aspect-square rounded-md border flex items-start justify-center p-1 min-h-[3rem] cursor-pointer select-none ${
-        isOver ? "border-funk-600 bg-blue-50" : "border-slate-300 bg-white hover:bg-slate-50"
+      className={`relative aspect-square rounded-md border flex items-start justify-center p-1 min-h-[3.25rem] cursor-pointer select-none ${
+        isOver ? "border-brand ring-2 ring-brand/30 bg-brand/5" : "border-slate-300 bg-white hover:bg-slate-50"
       }`}
     >
       <StackView stack={stack} />
@@ -138,10 +139,10 @@ function DropCell({
             e.stopPropagation();
             onRemove(k);
           }}
-          className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-slate-700 text-white text-[10px] leading-4"
+          className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-ink text-white inline-flex items-center justify-center shadow"
           title="oberstes entfernen"
         >
-          ×
+          <MinusIcon size={12} />
         </button>
       )}
     </div>

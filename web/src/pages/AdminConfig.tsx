@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { api, ApiError } from "../api";
 import { Header, Page, Banner } from "../components";
 import { getFeGameType, listFeGameTypes } from "../gametypes/registry";
+import { CrossIcon } from "../icons";
 
 interface PartDraft {
   type: string;
@@ -131,8 +132,12 @@ export function AdminConfig() {
                     onChange={(e) => setGroups((gs) => gs.map((x, j) => (j === i ? e.target.value : x)))}
                   />
                   {isDraft && groups.length > 1 && (
-                    <button className="btn-ghost" onClick={() => setGroups((gs) => gs.filter((_, j) => j !== i))}>
-                      ✕
+                    <button
+                      className="btn-ghost px-3 shrink-0"
+                      aria-label="Gruppe entfernen"
+                      onClick={() => setGroups((gs) => gs.filter((_, j) => j !== i))}
+                    >
+                      <CrossIcon size={18} />
                     </button>
                   )}
                 </div>

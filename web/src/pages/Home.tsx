@@ -34,7 +34,7 @@ export function Home() {
     <>
       <Header title="Übungsleitung" />
       <Page>
-        <div className="card max-w-md mx-auto space-y-3">
+        <div className="card w-full max-w-md mx-auto space-y-3">
           <div className="flex gap-2">
             <button
               className={mode === "create" ? "btn-primary flex-1" : "btn-ghost flex-1"}
