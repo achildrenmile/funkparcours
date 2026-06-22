@@ -15,13 +15,15 @@ export function Header({
 }) {
   return (
     <header className="bg-ink text-white shadow-lg">
-      <div className="max-w-4xl mx-auto px-4 h-24 flex items-center justify-between gap-3">
-        <a href="/" className="flex items-center gap-3 shrink-0">
-          <img src="/oeradio-logo.webp" alt="OERadio" className="h-20 w-auto" />
-          <span className="font-bold text-lg hidden sm:block whitespace-nowrap">
+      <div className="max-w-4xl mx-auto px-4 h-28 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 shrink-0">
+          <a href="https://oeradio.at" target="_blank" rel="noopener noreferrer">
+            <img src="/oeradio-logo.webp" alt="OERadio" className="h-24 w-auto" />
+          </a>
+          <a href="/" className="font-bold text-lg hidden sm:block whitespace-nowrap">
             Funk<span className="text-brand-light">Parcours</span>
-          </span>
-        </a>
+          </a>
+        </div>
         <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
           {(title || sub) && (
             <div className="text-right min-w-0">
@@ -39,7 +41,7 @@ export function Header({
 
 export function Page({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-[calc(100dvh-6rem)] flex flex-col">
+    <div className="min-h-[calc(100dvh-7rem)] flex flex-col">
       <div className="max-w-4xl w-full mx-auto p-4 sm:p-5 space-y-4 flex-1">{children}</div>
       <Footer />
     </div>
