@@ -6,6 +6,7 @@ import { Home } from "./pages/Home";
 import { AdminConfig } from "./pages/AdminConfig";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import { AdminLinks } from "./pages/AdminLinks";
+import { SuperAdmin } from "./pages/SuperAdmin";
 import { Station } from "./pages/Station";
 
 const router = createBrowserRouter([
@@ -13,6 +14,7 @@ const router = createBrowserRouter([
   { path: "/admin/:code", element: <AdminConfig /> },
   { path: "/admin/:code/dashboard", element: <AdminDashboard /> },
   { path: "/admin/:code/links", element: <AdminLinks /> },
+  { path: "/super", element: <SuperAdmin /> },
   { path: "/s/:token", element: <Station /> },
 ]);
 

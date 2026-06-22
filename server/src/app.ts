@@ -12,6 +12,7 @@ import { registerBuiltinGameTypes } from "@funkparcours/shared";
 import { adminRoutes } from "./routes/admin.js";
 import { stationRoutes } from "./routes/station.js";
 import { wsRoutes } from "./routes/ws.js";
+import { superadminRoutes } from "./routes/superadmin.js";
 
 export async function buildApp() {
   registerBuiltinGameTypes();
@@ -51,6 +52,7 @@ export async function buildApp() {
   await app.register(adminRoutes);
   await app.register(stationRoutes);
   await app.register(wsRoutes);
+  await app.register(superadminRoutes);
 
   // serve built frontend if present (single-container prod)
   await serveStatic(app);
