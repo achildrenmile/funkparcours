@@ -55,7 +55,35 @@ export function Home() {
           </Banner>
         )}
 
+        {/* Intro / what is this */}
+        <div className="max-w-2xl mx-auto space-y-4 text-center">
+          <img
+            src="/funkparcours-hero.png"
+            alt="FunkParcours"
+            className="w-full rounded-2xl border border-slate-200 shadow-card"
+          />
+          <h1 className="text-2xl font-bold">Funkübungen, die wirklich über Funk laufen</h1>
+          <p className="text-slate-600 leading-relaxed">
+            Die <b>Leitstation</b> sieht eine Aufgabe am Bildschirm und gibt sie <b>über echtes Funkgerät</b>{" "}
+            durch. Der <b>Empfangstrupp</b> hört zu und baut die Aufgabe an seinem eigenen Schirm nach. Die
+            Plattform überträgt nichts selbst – sie zeigt nur die Vorlage, prüft den Nachbau und wertet nach{" "}
+            <b>Genauigkeit und Zeit</b>.
+          </p>
+          <div className="grid sm:grid-cols-3 gap-3 text-left">
+            <RoleCard title="Übungsleitung" desc="Legt das Spiel an, konfiguriert Gruppen & Aufgaben, startet und sieht das Live-Ranking. Das machst du hier." />
+            <RoleCard title="Leitstation (Sender)" desc="Bekommt die Vorlage am Schirm und funkt sie durch. Zugang per Link/QR von der Übungsleitung." />
+            <RoleCard title="Empfangstrupp (Empfänger)" desc="Baut die gefunkte Aufgabe am Schirm nach und gibt ab. Zugang per Link/QR von der Übungsleitung." />
+          </div>
+          <Banner kind="info">
+            Du bist <b>Station</b> und hast einen Link oder QR-Code bekommen? Einfach öffnen – kein Login nötig.
+            Diese Seite ist nur für die <b>Übungsleitung</b>.
+          </Banner>
+        </div>
+
         <div className="card w-full max-w-md mx-auto space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 text-center">
+            Übungsleitung
+          </p>
           <div className="flex gap-2">
             <button
               className={mode === "create" ? "btn-primary flex-1" : "btn-ghost flex-1"}
@@ -88,19 +116,22 @@ export function Home() {
             <input
               className="input"
               type="password"
+              autoComplete={mode === "create" ? "new-password" : "current-password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && submit()}
             />
+            <p className="text-xs text-slate-500 mt-1">
+              {mode === "create"
+                ? "Frei wählbar – du legst es jetzt fest. Damit verwaltest du das Spiel später, also gut merken."
+                : "Das Passwort, das beim Anlegen des Spiels gesetzt wurde."}
+            </p>
           </div>
 
           {err && <Banner kind="warn">{err}</Banner>}
           <button className="btn-primary w-full" disabled={busy} onClick={submit}>
             {mode === "create" ? "Spiel anlegen" : "Anmelden"}
           </button>
-          <p className="text-xs text-slate-500">
-            Das Funkgerät ist der Kanal. Die Plattform gibt nur die Aufgabe vor, prüft den Nachbau und wertet.
-          </p>
         </div>
 
         {recent.length > 0 && (
@@ -137,5 +168,14 @@ export function Home() {
         )}
       </Page>
     </>
+  );
+}
+
+function RoleCard({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div className="card p-3">
+      <div className="font-semibold text-sm">{title}</div>
+      <p className="text-xs text-slate-500 mt-1 leading-relaxed">{desc}</p>
+    </div>
   );
 }
