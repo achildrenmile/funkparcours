@@ -4,9 +4,9 @@ import { ClockIcon } from "./icons";
 export function Header({ title, sub }: { title?: string; sub?: string }) {
   return (
     <header className="bg-ink text-white shadow-lg">
-      <div className="max-w-4xl mx-auto px-4 h-20 flex items-center justify-between gap-3">
+      <div className="max-w-4xl mx-auto px-4 h-24 flex items-center justify-between gap-3">
         <a href="/" className="flex items-center gap-3 shrink-0">
-          <img src="/oeradio-logo.webp" alt="OERadio" className="h-14 w-auto" />
+          <img src="/oeradio-logo.webp" alt="OERadio" className="h-20 w-auto" />
           <span className="font-bold text-lg hidden sm:block whitespace-nowrap">
             Funk<span className="text-brand-light">Parcours</span>
           </span>
@@ -25,7 +25,7 @@ export function Header({ title, sub }: { title?: string; sub?: string }) {
 
 export function Page({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-[calc(100dvh-5rem)] flex flex-col">
+    <div className="min-h-[calc(100dvh-6rem)] flex flex-col">
       <div className="max-w-4xl w-full mx-auto p-4 sm:p-5 space-y-4 flex-1">{children}</div>
       <Footer />
     </div>
