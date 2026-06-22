@@ -35,7 +35,6 @@ export function AdminConfig() {
   const [scoring, setScoring] = useState<Scoring>(SCORING_DEFAULTS.weighted);
   const [antiCheat, setAntiCheat] = useState<"unique_per_group" | "same_for_all">("unique_per_group");
   const [links, setLinks] = useState<any[]>([]);
-  const [qr, setQr] = useState<Record<string, { leit: string; trupp: string }>>({});
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -58,7 +57,6 @@ export function AdminConfig() {
           })),
         );
       setLinks(g.links);
-      setQr(g.qr);
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) nav(`/?code=${code}`);
       else setErr(String(e));
@@ -264,37 +262,23 @@ export function AdminConfig() {
           </div>
         )}
 
-        {/* Join links + QR */}
+        {/* Stations & links live on a dedicated, shareable/printable page */}
         {links.length > 0 && (
-          <div className="card">
-            <h3 className="font-semibold mb-2">Stationen / Join-Links</h3>
-            <div className="grid sm:grid-cols-2 gap-3">
-              {links.map((l) => (
-                <div key={l.groupId} className="border rounded-lg p-3">
-                  <div className="font-medium mb-2">{l.name}</div>
-                  <LinkRow label="Leitstation (Sendebild)" url={l.leitUrl} qr={qr[l.groupId]?.leit} />
-                  <LinkRow label="Empfangstrupp (Empfangsbild)" url={l.truppUrl} qr={qr[l.groupId]?.trupp} />
-                </div>
-              ))}
+          <div className="card flex items-center justify-between gap-3">
+            <div>
+              <h3 className="font-semibold">Stationen & Links</h3>
+              <p className="text-sm text-slate-500">
+                {links.length} Gruppe{links.length > 1 ? "n" : ""} · QR-Codes, getrennte Ansichten für
+                Sender/Empfänger, druckbar.
+              </p>
             </div>
+            <button className="btn-primary shrink-0" onClick={() => nav(`/admin/${code}/links`)}>
+              Öffnen →
+            </button>
           </div>
         )}
       </Page>
     </>
-  );
-}
-
-function LinkRow({ label, url, qr }: { label: string; url: string; qr?: string }) {
-  return (
-    <div className="flex items-center gap-3 py-2 border-t first:border-t-0">
-      {qr && <img src={qr} alt="QR" className="w-16 h-16" />}
-      <div className="min-w-0">
-        <div className="text-xs text-slate-500">{label}</div>
-        <a href={url} target="_blank" className="text-funk-600 text-sm break-all underline">
-          {url}
-        </a>
-      </div>
-    </div>
   );
 }
 

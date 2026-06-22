@@ -5,12 +5,14 @@ import "./index.css";
 import { Home } from "./pages/Home";
 import { AdminConfig } from "./pages/AdminConfig";
 import { AdminDashboard } from "./pages/AdminDashboard";
+import { AdminLinks } from "./pages/AdminLinks";
 import { Station } from "./pages/Station";
 
 const router = createBrowserRouter([
   { path: "/", element: <Home /> },
   { path: "/admin/:code", element: <AdminConfig /> },
   { path: "/admin/:code/dashboard", element: <AdminDashboard /> },
+  { path: "/admin/:code/links", element: <AdminLinks /> },
   { path: "/s/:token", element: <Station /> },
 ]);
 
