@@ -22,6 +22,10 @@ RUN npm run build -w @funkparcours/shared \
 FROM node:22-bookworm-slim AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
+# espeak-ng (TTS) + ffmpeg (noise/degrade) power the "Störfunk" audio station
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends espeak-ng ffmpeg \
+ && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./
 COPY shared/package.json shared/
 COPY server/package.json server/
