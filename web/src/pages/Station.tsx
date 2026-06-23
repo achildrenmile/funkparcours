@@ -78,6 +78,14 @@ function LeitPanel({ token, part, reload }: { token: string; part: any; reload: 
     }
   };
 
+  if (part.ready === false) {
+    return (
+      <Banner kind="info">
+        Warte auf die vorherige Gruppe in der Kette – sobald sie ihre Nachricht abgegeben hat, kannst du senden.
+      </Banner>
+    );
+  }
+
   if (!part.startedAt) {
     return (
       <div className="card text-center space-y-5 py-8">

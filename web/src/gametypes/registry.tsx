@@ -11,6 +11,7 @@ import { SpruchLeit, SpruchTrupp, SpruchConfigForm } from "./spruch";
 import { SkizzeLeit, SkizzeTrupp, SkizzeConfigForm } from "./skizze";
 import { ReihenfolgeLeit, ReihenfolgeTrupp, ReihenfolgeConfigForm } from "./reihenfolge";
 import { QuizLeit, QuizTrupp, QuizConfigForm } from "./quiz";
+import { RelaisLeit, RelaisTrupp, RelaisConfigForm } from "./relais";
 
 export interface LeitViewProps {
   payload: any;
@@ -135,6 +136,14 @@ const REGISTRY: Record<string, FeGameType> = {
     LeitView: QuizLeit,
     TruppView: QuizTrupp,
     ConfigForm: QuizConfigForm,
+  },
+  relais: {
+    id: "relais",
+    label: "Relais (Stille Post)",
+    defaultConfig: { length: "normal" },
+    LeitView: RelaisLeit,
+    TruppView: RelaisTrupp,
+    ConfigForm: RelaisConfigForm,
   },
 };
 

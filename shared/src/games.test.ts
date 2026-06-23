@@ -10,6 +10,7 @@ import { spruch, spruchConfigSchema } from "./games/spruch.js";
 import { skizze, skizzeConfigSchema } from "./games/skizze.js";
 import { reihenfolge, reihenfolgeConfigSchema } from "./games/reihenfolge.js";
 import { quiz, quizConfigSchema } from "./games/quiz.js";
+import { relais, relaisConfigSchema } from "./games/relais.js";
 
 describe("nato", () => {
   const cfg = (o = {}) => natoConfigSchema.parse(o);
@@ -289,5 +290,30 @@ describe("quiz", () => {
     ans[0] = (ans[0] + 1) % 4; // break one
     const r = quiz.compare(p, { answers: ans });
     expect(r.accuracy).toBeCloseTo(3 / 4);
+  });
+});
+
+describe("relais", () => {
+  const cfg = (o = {}) => relaisConfigSchema.parse(o);
+  it("deterministic original; length adds detail", () => {
+    const a = relais.generate(cfg({ length: "lang" }), createRng("x"));
+    const b = relais.generate(cfg({ length: "lang" }), createRng("x"));
+    expect(a).toEqual(b);
+    expect(a.incoming).toMatch(/Priorität/);
+    const kurz = relais.generate(cfg({ length: "kurz" }), createRng("x"));
+    expect(kurz.incoming).not.toMatch(/Priorität/);
+  });
+  it("perfect relay -> accuracy 1", () => {
+    const p = relais.generate(cfg(), createRng("x"));
+    const r = relais.compare({ incoming: p.incoming }, { text: p.incoming! });
+    expect(r.accuracy).toBe(1);
+  });
+  it("drift lowers accuracy but stays partial; case/space-insensitive", () => {
+    const ref = { incoming: "Florian 1 an Basis 1: Brand im Erdgeschoss, kommen." };
+    const exact = relais.compare(ref, { text: "  florian 1 an basis 1: brand im erdgeschoss, kommen.  " });
+    expect(exact.accuracy).toBe(1);
+    const drifted = relais.compare(ref, { text: "Florian 1 an Basis 1: Brand im Keller, kommen." });
+    expect(drifted.accuracy).toBeGreaterThan(0.7);
+    expect(drifted.accuracy).toBeLessThan(1);
   });
 });
