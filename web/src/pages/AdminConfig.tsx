@@ -215,6 +215,7 @@ export function AdminConfig() {
                     </button>
                   )}
                 </div>
+                {ft?.description && <p className="text-sm text-slate-500">{ft.description}</p>}
                 {ft && (
                   <fieldset disabled={!isDraft}>
                     <ft.ConfigForm
@@ -243,7 +244,7 @@ export function AdminConfig() {
           {isDraft && (
             <div className="flex flex-wrap gap-2">
               {listFeGameTypes().map((ft) => (
-                <button key={ft.id} className="btn-ghost" onClick={() => addPart(ft.id)}>
+                <button key={ft.id} className="btn-ghost" title={ft.description} onClick={() => addPart(ft.id)}>
                   + {ft.label}
                 </button>
               ))}
