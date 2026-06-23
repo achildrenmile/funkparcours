@@ -1,6 +1,5 @@
 import { z } from "zod";
 import type { GameType } from "../gametype.js";
-import type { SeededRng } from "../rng.js";
 
 /**
  * Tactical sketch ("Lageskizze"). The sender describes a small situation map —
@@ -46,7 +45,7 @@ export type SkizzeAnswer = z.infer<typeof skizzeAnswerSchema>;
 const COL_ALPHA = "ABCDEFGHIJKL";
 const colLabels = (cols: number) => Array.from({ length: cols }, (_, i) => COL_ALPHA[i]);
 const rowLabels = (rows: number) => Array.from({ length: rows }, (_, i) => String(i + 1));
-export const cellKey = (col: string, row: string) => `${col}${row}`;
+const cellKey = (col: string, row: string) => `${col}${row}`;
 
 const cellsEqual = (a: SkizzeCell | undefined, b: SkizzeCell | undefined): boolean => {
   if (!a && !b) return true;
