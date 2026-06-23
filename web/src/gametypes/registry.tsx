@@ -6,6 +6,7 @@ import { MeldungLeit, MeldungTrupp, MeldungConfigForm } from "./meldung";
 import { KoordinatenLeit, KoordinatenTrupp, KoordinatenConfigForm } from "./koordinaten";
 import { ZahlenLeit, ZahlenTrupp, ZahlenConfigForm } from "./zahlen";
 import { EncodeLeit, EncodeTrupp, EncodeConfigForm } from "./encode";
+import { ZeitLeit, ZeitTrupp, ZeitConfigForm } from "./zeit";
 
 export interface LeitViewProps {
   payload: any;
@@ -90,6 +91,14 @@ const REGISTRY: Record<string, FeGameType> = {
     LeitView: EncodeLeit,
     TruppView: EncodeTrupp,
     ConfigForm: EncodeConfigForm,
+  },
+  zeit: {
+    id: "zeit",
+    label: "Uhrzeit / Datum",
+    defaultConfig: { mode: "mix", count: 5 },
+    LeitView: ZeitLeit,
+    TruppView: ZeitTrupp,
+    ConfigForm: ZeitConfigForm,
   },
 };
 
