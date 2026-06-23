@@ -54,6 +54,7 @@ function joinLinks(gs: (typeof groups.$inferSelect)[]) {
   return gs.map((g) => ({
     groupId: g.id,
     name: g.name,
+    avatar: g.avatar,
     leitUrl: `${env.PUBLIC_BASE_URL}/s/${g.leitToken}`,
     truppUrl: `${env.PUBLIC_BASE_URL}/s/${g.truppToken}`,
   }));
@@ -146,7 +147,7 @@ export async function adminRoutes(app: FastifyInstance) {
         currentPartId: loaded.game.currentPartId,
       },
       parts: loaded.parts,
-      groups: loaded.groups.map((g) => ({ id: g.id, name: g.name })),
+      groups: loaded.groups.map((g) => ({ id: g.id, name: g.name, avatar: g.avatar })),
       links,
       qr,
     });
@@ -166,7 +167,10 @@ export async function adminRoutes(app: FastifyInstance) {
         title: z.string().min(1).max(120).optional(),
         scoringConfig: scoringConfigSchema,
         antiCheatMode: z.enum(["unique_per_group", "same_for_all"]),
-        groups: z.array(z.object({ name: z.string().min(1).max(60) })).min(1).max(50),
+        groups: z
+          .array(z.object({ name: z.string().min(1).max(60), avatar: z.string().max(16).nullable().optional() }))
+          .min(1)
+          .max(50),
         parts: z
           .array(
             z.object({
@@ -214,11 +218,15 @@ export async function adminRoutes(app: FastifyInstance) {
     for (let i = 0; i < body.groups.length; i++) {
       const desired = body.groups[i];
       if (existing[i]) {
-        await db.update(groups).set({ name: desired.name }).where(eq(groups.id, existing[i].id));
+        await db
+          .update(groups)
+          .set({ name: desired.name, avatar: desired.avatar ?? null })
+          .where(eq(groups.id, existing[i].id));
       } else {
         await db.insert(groups).values({
           gameId: game.id,
           name: desired.name,
+          avatar: desired.avatar ?? null,
           leitToken: stationToken(),
           truppToken: stationToken(),
         });

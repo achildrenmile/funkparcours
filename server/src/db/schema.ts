@@ -52,6 +52,7 @@ export const groups = pgTable(
       .notNull()
       .references(() => games.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
+    avatar: text("avatar"),
     leitToken: text("leit_token").notNull().unique(),
     truppToken: text("trupp_token").notNull().unique(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

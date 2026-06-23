@@ -90,7 +90,7 @@ export function AdminDashboard() {
               <tbody>
                 {data.currentGroups.map((g: any) => (
                   <tr key={g.groupId} className="border-t">
-                    <td className="py-1 font-medium">{g.name}</td>
+                    <td className="py-1 font-medium">{g.avatar ? `${g.avatar} ` : ""}{g.name}</td>
                     <td><StatusPill s={g.status} /></td>
                     <td><Pct v={g.accuracy} /></td>
                     <td>{g.durationMs != null ? fmt(g.durationMs) : "–"}</td>
@@ -108,7 +108,7 @@ export function AdminDashboard() {
             {data.totals.map((t: any, i: number) => (
               <li key={t.groupId} className="flex items-center justify-between border-t py-1 first:border-t-0">
                 <span>
-                  <b className="w-6 inline-block">{i + 1}.</b> {t.name}
+                  <b className="w-6 inline-block">{i + 1}.</b> {t.avatar ? `${t.avatar} ` : ""}{t.name}
                 </span>
                 <span className="font-mono">{t.total.toFixed(2)}</span>
               </li>
@@ -132,7 +132,7 @@ export function AdminDashboard() {
                     .map((e: any) => (
                       <span key={e.groupId} className="text-sm bg-slate-100 rounded px-2 py-1">
                         {e.rank ? `#${e.rank} ` : ""}
-                        {e.name}: <Pct v={e.accuracy} /> · {e.score.toFixed(2)}
+                        {e.avatar ? `${e.avatar} ` : ""}{e.name}: <Pct v={e.accuracy} /> · {e.score.toFixed(2)}
                       </span>
                     ))}
                 </div>

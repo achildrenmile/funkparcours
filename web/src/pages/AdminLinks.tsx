@@ -9,6 +9,7 @@ type Role = "all" | "leit" | "trupp";
 interface LinkRow {
   groupId: string;
   name: string;
+  avatar?: string | null;
   leitUrl: string;
   truppUrl: string;
 }
@@ -88,7 +89,7 @@ export function AdminLinks() {
         <div className="grid gap-3 sm:grid-cols-2 print:grid-cols-2">
           {links.map((l) => (
             <div key={l.groupId} className="card break-inside-avoid">
-              <div className="font-bold text-lg mb-2">{l.name}</div>
+              <div className="font-bold text-lg mb-2">{l.avatar ? `${l.avatar} ` : ""}{l.name}</div>
               {(role === "all" || role === "leit") && (
                 <StationBlock role="leit" name={l.name} url={l.leitUrl} qr={qr[l.groupId]?.leit} compact={role === "all"} />
               )}

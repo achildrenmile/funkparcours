@@ -5,6 +5,12 @@ import { Header, Page, Banner } from "../components";
 import { getFeGameType, listFeGameTypes } from "../gametypes/registry";
 import { CrossIcon } from "../icons";
 import { rememberGame } from "../recent";
+import { AVATARS, NO_AVATAR } from "../avatars";
+
+interface GroupDraft {
+  name: string;
+  avatar: string | null;
+}
 
 interface PartDraft {
   type: string;
@@ -30,7 +36,10 @@ export function AdminConfig() {
   const nav = useNavigate();
   const [status, setStatus] = useState<string>("draft");
   const [title, setTitle] = useState("");
-  const [groups, setGroups] = useState<string[]>(["Gruppe 1", "Gruppe 2"]);
+  const [groups, setGroups] = useState<GroupDraft[]>([
+    { name: "Gruppe 1", avatar: AVATARS[0] },
+    { name: "Gruppe 2", avatar: AVATARS[1] },
+  ]);
   const [parts, setParts] = useState<PartDraft[]>([]);
   const [scoring, setScoring] = useState<Scoring>(SCORING_DEFAULTS.weighted);
   const [antiCheat, setAntiCheat] = useState<"unique_per_group" | "same_for_all">("unique_per_group");
@@ -46,7 +55,7 @@ export function AdminConfig() {
       setTitle(g.game.title);
       setScoring(g.game.scoringConfig);
       setAntiCheat(g.game.antiCheatMode);
-      if (g.groups.length) setGroups(g.groups.map((x: any) => x.name));
+      if (g.groups.length) setGroups(g.groups.map((x: any) => ({ name: x.name, avatar: x.avatar ?? null })));
       if (g.parts.length)
         setParts(
           g.parts.map((p: any) => ({
@@ -88,7 +97,7 @@ export function AdminConfig() {
         title,
         scoringConfig: scoring,
         antiCheatMode: antiCheat,
-        groups: groups.map((name) => ({ name })),
+        groups: groups.map((g) => ({ name: g.name, avatar: g.avatar })),
         parts,
       });
       setMsg("Gespeichert.");
@@ -139,28 +148,55 @@ export function AdminConfig() {
           </div>
           <div>
             <label className="label">Funkgruppen</label>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {groups.map((g, i) => (
-                <div key={i} className="flex gap-2">
-                  <input
-                    className="input"
-                    value={g}
-                    disabled={!isDraft}
-                    onChange={(e) => setGroups((gs) => gs.map((x, j) => (j === i ? e.target.value : x)))}
-                  />
-                  {isDraft && groups.length > 1 && (
-                    <button
-                      className="btn-ghost px-3 shrink-0"
-                      aria-label="Gruppe entfernen"
-                      onClick={() => setGroups((gs) => gs.filter((_, j) => j !== i))}
-                    >
-                      <CrossIcon size={18} />
-                    </button>
+                <div key={i} className="space-y-1.5">
+                  <div className="flex gap-2">
+                    <span className="inline-flex items-center justify-center w-10 h-10 text-2xl rounded-md border border-slate-200 bg-slate-50 shrink-0">
+                      {g.avatar ?? NO_AVATAR}
+                    </span>
+                    <input
+                      className="input"
+                      value={g.name}
+                      disabled={!isDraft}
+                      onChange={(e) => setGroups((gs) => gs.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}
+                    />
+                    {isDraft && groups.length > 1 && (
+                      <button
+                        className="btn-ghost px-3 shrink-0"
+                        aria-label="Gruppe entfernen"
+                        onClick={() => setGroups((gs) => gs.filter((_, j) => j !== i))}
+                      >
+                        <CrossIcon size={18} />
+                      </button>
+                    )}
+                  </div>
+                  {isDraft && (
+                    <div className="flex flex-wrap gap-1 pl-12">
+                      {AVATARS.map((a) => (
+                        <button
+                          key={a}
+                          type="button"
+                          onClick={() => setGroups((gs) => gs.map((x, j) => (j === i ? { ...x, avatar: a } : x)))}
+                          className={`w-8 h-8 text-xl rounded-md border ${g.avatar === a ? "border-brand bg-brand/10" : "border-transparent hover:bg-slate-100"}`}
+                        >
+                          {a}
+                        </button>
+                      ))}
+                    </div>
                   )}
                 </div>
               ))}
               {isDraft && (
-                <button className="btn-ghost" onClick={() => setGroups((gs) => [...gs, `Gruppe ${gs.length + 1}`])}>
+                <button
+                  className="btn-ghost"
+                  onClick={() =>
+                    setGroups((gs) => [
+                      ...gs,
+                      { name: `Gruppe ${gs.length + 1}`, avatar: AVATARS[gs.length % AVATARS.length] },
+                    ])
+                  }
+                >
                   + Gruppe
                 </button>
               )}
