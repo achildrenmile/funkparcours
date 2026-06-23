@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { HelpIcon, CrossIcon } from "./icons";
+import { listFeGameTypes } from "./gametypes/registry";
 
 export type HelpTopic =
   | "home"
@@ -66,12 +67,21 @@ export const HELP: Record<HelpTopic, { title: string; body: React.ReactNode }> =
           <Steps
             items={[
               "Funkgruppen anlegen (pro Gruppe je eine Leitstation + ein Empfangstrupp).",
-              "Spielteile hinzufügen (Symbolkarte, NATO, Meldung, Koordinaten, Zahlen/Frequenzen, Buchstabieren aktiv, Uhrzeit/Datum, Funkspruch-Lückentext, Lageskizze, Reihenfolge, Funk-Theorie-Quiz, Relais/Stille Post, Störfunk/Mithören) und je Typ konfigurieren.",
+              "Spielteile hinzufügen und je Typ konfigurieren (Spielarten siehe unten).",
               "Wertungsmodus + Anti-Cheat wählen, dann Speichern.",
               "Über „Stationen & Links“ die Zugänge verteilen.",
               "„Spiel starten“ → Live-Dashboard.",
             ]}
           />
+        </S>
+        <S title="Spielarten">
+          <ul className="space-y-1">
+            {listFeGameTypes().map((ft) => (
+              <li key={ft.id}>
+                <b>{ft.label}</b> — {ft.description}
+              </li>
+            ))}
+          </ul>
         </S>
         <S title="Wertungsmodi">
           <p>
