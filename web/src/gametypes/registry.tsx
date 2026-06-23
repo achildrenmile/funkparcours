@@ -33,6 +33,8 @@ export interface ConfigFormProps {
 export interface FeGameType {
   id: string;
   label: string;
+  /** one-line explanation shown in the admin config */
+  description: string;
   defaultConfig: Record<string, unknown>;
   LeitView: React.FC<LeitViewProps>;
   TruppView: React.FC<TruppViewProps>;
@@ -43,6 +45,8 @@ const REGISTRY: Record<string, FeGameType> = {
   symbolkarte: {
     id: "symbolkarte",
     label: "Symbolkarte",
+    description:
+      "Symbolraster merken: Leitstation beschreibt Form + Farbe je Feld, der Trupp baut das Gitter nach.",
     defaultConfig: {
       rows: 5,
       cols: 5,
@@ -59,6 +63,8 @@ const REGISTRY: Record<string, FeGameType> = {
   nato: {
     id: "nato",
     label: "Buchstabieren (NATO)",
+    description:
+      "Buchstabieren hören: Leitstation buchstabiert Wörter/Rufzeichen phonetisch, der Trupp schreibt die Buchstaben.",
     defaultConfig: { mode: "mix", count: 4, minLen: 4, maxLen: 7, showReference: true },
     LeitView: NatoLeit,
     TruppView: NatoTrupp,
@@ -67,6 +73,8 @@ const REGISTRY: Record<string, FeGameType> = {
   meldung: {
     id: "meldung",
     label: "Meldung",
+    description:
+      "Strukturierte Meldung aufnehmen: Leitstation gibt Felder (Von, An, Ort, Lage …) durch, der Trupp trägt sie ein.",
     defaultConfig: {
       fields: ["von", "an", "ort", "lage", "anzahl_personen", "prioritaet"],
       fuzzy: true,
@@ -79,6 +87,8 @@ const REGISTRY: Record<string, FeGameType> = {
   koordinaten: {
     id: "koordinaten",
     label: "Koordinaten",
+    description:
+      "Koordinaten markieren: Leitstation nennt Gitterfelder (z.B. C5), der Trupp klickt sie an.",
     defaultConfig: { rows: 8, cols: 8, markerCount: 5 },
     LeitView: KoordinatenLeit,
     TruppView: KoordinatenTrupp,
@@ -87,6 +97,8 @@ const REGISTRY: Record<string, FeGameType> = {
   zahlen: {
     id: "zahlen",
     label: "Zahlen / Frequenzen",
+    description:
+      "Zahlen übertragen: Leitstation liest Ziffernblöcke/Frequenzen/Kanäle, der Trupp tippt sie zurück.",
     defaultConfig: { mode: "mix", count: 5, groupSize: 4, showSpelling: true },
     LeitView: ZahlenLeit,
     TruppView: ZahlenTrupp,
@@ -95,6 +107,8 @@ const REGISTRY: Record<string, FeGameType> = {
   encode: {
     id: "encode",
     label: "Buchstabieren aktiv (NATO)",
+    description:
+      "Buchstabieren aktiv: Leitstation liest ein Klartextwort, der Trupp buchstabiert es im NATO-Alphabet zurück.",
     defaultConfig: { mode: "mix", count: 4, minLen: 4, maxLen: 7, showReference: true },
     LeitView: EncodeLeit,
     TruppView: EncodeTrupp,
@@ -103,6 +117,8 @@ const REGISTRY: Record<string, FeGameType> = {
   zeit: {
     id: "zeit",
     label: "Uhrzeit / Datum",
+    description:
+      "Uhrzeit/Datum im Funkformat: Leitstation liest Zeiten/Daten (14:32, 15.06.), der Trupp tippt sie zurück.",
     defaultConfig: { mode: "mix", count: 5 },
     LeitView: ZeitLeit,
     TruppView: ZeitTrupp,
@@ -111,6 +127,8 @@ const REGISTRY: Record<string, FeGameType> = {
   spruch: {
     id: "spruch",
     label: "Funkspruch (Lückentext)",
+    description:
+      "Lückentext: Leitstation liest komplette Funksprüche, der Trupp füllt nur die Lücken aus.",
     defaultConfig: { templateIds: ["ruf", "standort", "lage", "personen"], fuzzy: true, fuzzyThreshold: 0.8 },
     LeitView: SpruchLeit,
     TruppView: SpruchTrupp,
@@ -119,6 +137,8 @@ const REGISTRY: Record<string, FeGameType> = {
   skizze: {
     id: "skizze",
     label: "Lageskizze",
+    description:
+      "Lageskizze: Leitstation beschreibt Pfeile/Gefahr/Sammelplatz/Ziel auf einem Gitter, der Trupp baut die Karte nach.",
     defaultConfig: { rows: 6, cols: 6, count: 5 },
     LeitView: SkizzeLeit,
     TruppView: SkizzeTrupp,
@@ -127,6 +147,8 @@ const REGISTRY: Record<string, FeGameType> = {
   reihenfolge: {
     id: "reihenfolge",
     label: "Reihenfolge",
+    description:
+      "Reihenfolge/Marschtabelle: Leitstation gibt die richtige Reihenfolge durch, der Trupp sortiert die Einträge.",
     defaultConfig: { items: ["Sammelplatz", "Brücke Nord", "Bahnhof", "Kreuzung B1", "Funkmast", "Ziel Waldweg"] },
     LeitView: ReihenfolgeLeit,
     TruppView: ReihenfolgeTrupp,
@@ -135,6 +157,8 @@ const REGISTRY: Record<string, FeGameType> = {
   quiz: {
     id: "quiz",
     label: "Funk-Theorie (Quiz)",
+    description:
+      "Theorie-Quiz: Leitstation liest Frage + Antworten A–D vor, der Trupp wählt den gehörten Buchstaben.",
     defaultConfig: { count: 5 },
     LeitView: QuizLeit,
     TruppView: QuizTrupp,
@@ -143,6 +167,8 @@ const REGISTRY: Record<string, FeGameType> = {
   relais: {
     id: "relais",
     label: "Relais (Stille Post)",
+    description:
+      "Stille Post: Eine Nachricht wandert durch die Gruppenkette (Gruppe 1→2→3…); jede Gruppe wird gegen das Original gewertet.",
     defaultConfig: { length: "normal" },
     LeitView: RelaisLeit,
     TruppView: RelaisTrupp,
@@ -151,6 +177,8 @@ const REGISTRY: Record<string, FeGameType> = {
   stoerfunk: {
     id: "stoerfunk",
     label: "Störfunk (Mithören)",
+    description:
+      "Störfunk: Plattform erzeugt verrauschtes Audio, Leitstation spielt es über Funk, der Trupp schreibt mit.",
     defaultConfig: { length: "kurz", noise: 0.4 },
     LeitView: StoerfunkLeit,
     TruppView: StoerfunkTrupp,
