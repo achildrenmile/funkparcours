@@ -66,7 +66,7 @@ export const HELP: Record<HelpTopic, { title: string; body: React.ReactNode }> =
           <Steps
             items={[
               "Funkgruppen anlegen (pro Gruppe je eine Leitstation + ein Empfangstrupp).",
-              "Spielteile hinzufügen (Symbolkarte, NATO, Meldung, Koordinaten) und je Typ konfigurieren.",
+              "Spielteile hinzufügen (Symbolkarte, NATO, Meldung, Koordinaten, Zahlen/Frequenzen) und je Typ konfigurieren.",
               "Wertungsmodus + Anti-Cheat wählen, dann Speichern.",
               "Über „Stationen & Links“ die Zugänge verteilen.",
               "„Spiel starten“ → Live-Dashboard.",
