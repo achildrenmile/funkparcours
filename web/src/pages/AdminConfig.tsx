@@ -241,7 +241,7 @@ export function AdminConfig() {
             );
           })}
           {isDraft && (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {listFeGameTypes().map((ft) => (
                 <button key={ft.id} className="btn-ghost" onClick={() => addPart(ft.id)}>
                   + {ft.label}
