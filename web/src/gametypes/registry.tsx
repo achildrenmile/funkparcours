@@ -8,6 +8,7 @@ import { ZahlenLeit, ZahlenTrupp, ZahlenConfigForm } from "./zahlen";
 import { EncodeLeit, EncodeTrupp, EncodeConfigForm } from "./encode";
 import { ZeitLeit, ZeitTrupp, ZeitConfigForm } from "./zeit";
 import { SpruchLeit, SpruchTrupp, SpruchConfigForm } from "./spruch";
+import { SkizzeLeit, SkizzeTrupp, SkizzeConfigForm } from "./skizze";
 
 export interface LeitViewProps {
   payload: any;
@@ -108,6 +109,14 @@ const REGISTRY: Record<string, FeGameType> = {
     LeitView: SpruchLeit,
     TruppView: SpruchTrupp,
     ConfigForm: SpruchConfigForm,
+  },
+  skizze: {
+    id: "skizze",
+    label: "Lageskizze",
+    defaultConfig: { rows: 6, cols: 6, count: 5 },
+    LeitView: SkizzeLeit,
+    TruppView: SkizzeTrupp,
+    ConfigForm: SkizzeConfigForm,
   },
 };
 
