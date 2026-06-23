@@ -7,6 +7,7 @@ import { KoordinatenLeit, KoordinatenTrupp, KoordinatenConfigForm } from "./koor
 import { ZahlenLeit, ZahlenTrupp, ZahlenConfigForm } from "./zahlen";
 import { EncodeLeit, EncodeTrupp, EncodeConfigForm } from "./encode";
 import { ZeitLeit, ZeitTrupp, ZeitConfigForm } from "./zeit";
+import { SpruchLeit, SpruchTrupp, SpruchConfigForm } from "./spruch";
 
 export interface LeitViewProps {
   payload: any;
@@ -99,6 +100,14 @@ const REGISTRY: Record<string, FeGameType> = {
     LeitView: ZeitLeit,
     TruppView: ZeitTrupp,
     ConfigForm: ZeitConfigForm,
+  },
+  spruch: {
+    id: "spruch",
+    label: "Funkspruch (Lückentext)",
+    defaultConfig: { templateIds: ["ruf", "standort", "lage", "personen"], fuzzy: true, fuzzyThreshold: 0.8 },
+    LeitView: SpruchLeit,
+    TruppView: SpruchTrupp,
+    ConfigForm: SpruchConfigForm,
   },
 };
 
