@@ -64,10 +64,12 @@ export async function stationRoutes(app: FastifyInstance) {
     };
 
     if (st.role === "leit") {
+      // relais: this group can only transmit once the chain reached it
+      const ready = part.type === "relais" ? (round.payload as { incoming?: unknown })?.incoming != null : true;
       // payload (the filled template) only after the timer started
       return reply.send({
         ...base,
-        part: { ...part_common, payload: round.startedAt ? round.payload : null },
+        part: { ...part_common, ready, payload: round.startedAt ? round.payload : null },
       });
     }
 
@@ -108,6 +110,10 @@ export async function stationRoutes(app: FastifyInstance) {
       .from(rounds)
       .where(and(eq(rounds.gamePartId, game.currentPartId), eq(rounds.groupId, st.group.id)));
     if (!round) return reply.code(404).send({ error: "keine Runde" });
+    const [curPart] = await db.select().from(gameParts).where(eq(gameParts.id, game.currentPartId));
+    if (curPart?.type === "relais" && (round.payload as { incoming?: unknown })?.incoming == null) {
+      return reply.code(409).send({ error: "Vorherige Gruppe in der Kette ist noch nicht fertig." });
+    }
     const startedAt = await startTransmission(round.id);
     hub.toGroup(game.id, st.group.id, {
       type: "round_started",
@@ -141,6 +147,10 @@ export async function stationRoutes(app: FastifyInstance) {
         groupId: st.group.id,
         accuracy: result.accuracy,
       });
+      // relais: wake the next group in the chain — its input is now available
+      if (result.nextGroupId) {
+        hub.toGroup(game.id, result.nextGroupId, { type: "chain_advanced", groupId: result.nextGroupId });
+      }
       hub.toGame(game.id, { type: "leaderboard_update" });
       return reply.send(result);
     } catch (err) {

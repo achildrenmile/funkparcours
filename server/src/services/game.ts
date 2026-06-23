@@ -36,26 +36,42 @@ export async function logEvent(gameId: string, type: string, data: unknown = {})
   await db.insert(events).values({ gameId, type, data: data as object });
 }
 
+/** Groups of a game in chain order (creation order; id as a stable tiebreak). */
+async function orderedGroups(gameId: string) {
+  return db
+    .select()
+    .from(groups)
+    .where(eq(groups.gameId, gameId))
+    .orderBy(groups.createdAt, groups.id);
+}
+
 /** Build (idempotently) one round per group for a part, seeding per anti-cheat mode. */
 export async function ensureRoundsForPart(gameId: string, partId: string) {
   const [part] = await db.select().from(gameParts).where(eq(gameParts.id, partId));
   if (!part) throw new Error("part not found");
   const [game] = await db.select().from(games).where(eq(games.id, gameId));
-  const grps = await db.select().from(groups).where(eq(groups.gameId, gameId));
+  const grps = await orderedGroups(gameId);
   const existing = await db.select().from(rounds).where(eq(rounds.gamePartId, partId));
   const have = new Set(existing.map((r) => r.groupId));
 
   const gt = getGameType(part.type);
   const config = gt.configSchema.parse(part.config);
 
+  // Relais is a chain: only the head gets the generated original; the rest stay
+  // empty until the previous group's submission fills them in (see submitAnswer).
+  const isRelais = part.type === "relais";
+
   const toInsert = [];
-  for (const grp of grps) {
+  for (let i = 0; i < grps.length; i++) {
+    const grp = grps[i];
     if (have.has(grp.id)) continue;
     const seed =
-      game.antiCheatMode === "same_for_all"
-        ? `${part.id}:shared`
-        : `${part.id}:${grp.id}`;
-    const payload = gt.generate(config, makeRng(seed));
+      game.antiCheatMode === "same_for_all" ? `${part.id}:shared` : `${part.id}:${grp.id}`;
+    const payload = isRelais
+      ? i === 0
+        ? gt.generate(config, makeRng(`${part.id}:relais`))
+        : { incoming: null }
+      : gt.generate(config, makeRng(seed));
     toInsert.push({
       gamePartId: part.id,
       groupId: grp.id,
@@ -129,6 +145,8 @@ export interface SubmitResult {
   score: number;
   detail: unknown;
   attemptNo: number;
+  /** relais only: the next group in the chain whose input was just filled in */
+  nextGroupId?: string;
 }
 
 /**
@@ -153,7 +171,31 @@ export async function submitAnswer(
 
   const gt = getGameType(part.type);
   const parsedAnswer = gt.answerSchema.parse(answer);
-  const { accuracy, detail } = gt.compare(round.payload, parsedAnswer);
+
+  // Relais: score against the TRUE original (the chain head's input), and hand
+  // this group's transcription to the next group in the chain.
+  let scoringPayload: unknown = round.payload;
+  let nextGroupId: string | undefined;
+  if (part.type === "relais") {
+    const grps = await orderedGroups(part.gameId);
+    const partRounds = await db.select().from(rounds).where(eq(rounds.gamePartId, part.id));
+    const headRound = partRounds.find((r) => r.groupId === grps[0]?.id);
+    const original = (headRound?.payload as { incoming?: string } | undefined)?.incoming ?? "";
+    scoringPayload = { incoming: original };
+
+    const idx = grps.findIndex((g) => g.id === round.groupId);
+    const next = grps[idx + 1];
+    const nextRound = next && partRounds.find((r) => r.groupId === next.id);
+    if (next && nextRound) {
+      await db
+        .update(rounds)
+        .set({ payload: { incoming: (parsedAnswer as { text: string }).text } })
+        .where(eq(rounds.id, nextRound.id));
+      nextGroupId = next.id;
+    }
+  }
+
+  const { accuracy, detail } = gt.compare(scoringPayload, parsedAnswer);
   const durationMs = Date.now() - round.startedAt.getTime();
   const attemptNo = prior.length + 1;
 
@@ -182,6 +224,7 @@ export async function submitAnswer(
     score: Number(mine.score ?? 0),
     detail,
     attemptNo,
+    nextGroupId,
   };
 }
 
