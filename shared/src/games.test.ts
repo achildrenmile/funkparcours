@@ -3,6 +3,7 @@ import { createRng } from "./rng.js";
 import { nato, natoConfigSchema } from "./games/nato.js";
 import { meldung, meldungConfigSchema } from "./games/meldung.js";
 import { koordinaten, koordinatenConfigSchema } from "./games/koordinaten.js";
+import { zahlen, zahlenConfigSchema } from "./games/zahlen.js";
 
 describe("nato", () => {
   const cfg = (o = {}) => natoConfigSchema.parse(o);
@@ -80,5 +81,35 @@ describe("koordinaten", () => {
     const r = koordinaten.compare(p, { markers: [] });
     expect(r.accuracy).toBeCloseTo((16 - 3) / 16);
     expect((r.detail as any).hits).toBe(0);
+  });
+});
+
+describe("zahlen", () => {
+  const cfg = (o = {}) => zahlenConfigSchema.parse(o);
+  it("deterministic + count honored", () => {
+    const a = zahlen.generate(cfg({ count: 6 }), createRng("z"));
+    const b = zahlen.generate(cfg({ count: 6 }), createRng("z"));
+    expect(a).toEqual(b);
+    expect(a.items.length).toBe(6);
+  });
+  it("ziffern mode = pure digit blocks of groupSize", () => {
+    const p = zahlen.generate(cfg({ mode: "ziffern", count: 5, groupSize: 4 }), createRng("z"));
+    for (const it of p.items) expect(it).toMatch(/^\d{4}$/);
+  });
+  it("frequenz mode contains a comma", () => {
+    const p = zahlen.generate(cfg({ mode: "frequenz", count: 5 }), createRng("f"));
+    for (const it of p.items) expect(it).toMatch(/^\d+,\d{3}$/);
+  });
+  it("exact answer -> accuracy 1, all perfect", () => {
+    const p = zahlen.generate(cfg({ count: 5 }), createRng("z"));
+    const r = zahlen.compare(p, { items: p.items });
+    expect(r.accuracy).toBe(1);
+    expect((r.detail as any).perfectItems).toBe(5);
+  });
+  it("char-wise partial credit; spaces ignored, comma significant", () => {
+    const p = { showSpelling: true, items: ["145,500"] };
+    const r = zahlen.compare(p, { items: [" 145,5 0 9 "] }); // last digit wrong
+    expect(r.accuracy).toBeCloseTo(6 / 7);
+    expect((r.detail as any).perfectItems).toBe(0);
   });
 });

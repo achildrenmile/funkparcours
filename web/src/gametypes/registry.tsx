@@ -4,6 +4,7 @@ import { SymbolkarteConfigForm } from "./symbolkarteConfig";
 import { NatoLeit, NatoTrupp, NatoConfigForm } from "./nato";
 import { MeldungLeit, MeldungTrupp, MeldungConfigForm } from "./meldung";
 import { KoordinatenLeit, KoordinatenTrupp, KoordinatenConfigForm } from "./koordinaten";
+import { ZahlenLeit, ZahlenTrupp, ZahlenConfigForm } from "./zahlen";
 
 export interface LeitViewProps {
   payload: any;
@@ -72,6 +73,14 @@ const REGISTRY: Record<string, FeGameType> = {
     LeitView: KoordinatenLeit,
     TruppView: KoordinatenTrupp,
     ConfigForm: KoordinatenConfigForm,
+  },
+  zahlen: {
+    id: "zahlen",
+    label: "Zahlen / Frequenzen",
+    defaultConfig: { mode: "mix", count: 5, groupSize: 4, showSpelling: true },
+    LeitView: ZahlenLeit,
+    TruppView: ZahlenTrupp,
+    ConfigForm: ZahlenConfigForm,
   },
 };
 
