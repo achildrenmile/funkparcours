@@ -112,7 +112,7 @@ function LeitPanel({ token, part, reload }: { token: string; part: any; reload: 
         <div className="text-lg"><Timer startedAt={part.startedAt} /></div>
       </div>
       <div className="card overflow-auto">
-        {ft && part.payload ? <ft.LeitView payload={part.payload} /> : <p>Vorlage wird geladen…</p>}
+        {ft && part.payload ? <ft.LeitView payload={part.payload} token={token} /> : <p>Vorlage wird geladen…</p>}
       </div>
       <Banner kind="info">Gib die Vorlage exakt über Funk durch. Buchstabieren nicht vergessen.</Banner>
     </div>

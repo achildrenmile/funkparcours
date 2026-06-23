@@ -11,6 +11,7 @@ import { skizze, skizzeConfigSchema } from "./games/skizze.js";
 import { reihenfolge, reihenfolgeConfigSchema } from "./games/reihenfolge.js";
 import { quiz, quizConfigSchema } from "./games/quiz.js";
 import { relais, relaisConfigSchema } from "./games/relais.js";
+import { stoerfunk, stoerfunkConfigSchema } from "./games/stoerfunk.js";
 
 describe("nato", () => {
   const cfg = (o = {}) => natoConfigSchema.parse(o);
@@ -315,5 +316,23 @@ describe("relais", () => {
     const drifted = relais.compare(ref, { text: "Florian 1 an Basis 1: Brand im Keller, kommen." });
     expect(drifted.accuracy).toBeGreaterThan(0.7);
     expect(drifted.accuracy).toBeLessThan(1);
+  });
+});
+
+describe("stoerfunk", () => {
+  const cfg = (o = {}) => stoerfunkConfigSchema.parse(o);
+  it("deterministic; payload carries text + noise", () => {
+    const a = stoerfunk.generate(cfg({ noise: 0.6 }), createRng("y"));
+    const b = stoerfunk.generate(cfg({ noise: 0.6 }), createRng("y"));
+    expect(a).toEqual(b);
+    expect(a.text.length).toBeGreaterThan(0);
+    expect(a.noise).toBe(0.6);
+  });
+  it("perfect copy -> 1; drift partial; case/space-insensitive", () => {
+    const p = { text: "Florian 1 an Basis 1: Brand im Erdgeschoss, kommen.", noise: 0.4 };
+    expect(stoerfunk.compare(p, { text: "  florian 1 an basis 1: brand im erdgeschoss, kommen. " }).accuracy).toBe(1);
+    const d = stoerfunk.compare(p, { text: "Florian 1 an Basis 1: Brand im Keller, kommen." });
+    expect(d.accuracy).toBeGreaterThan(0.7);
+    expect(d.accuracy).toBeLessThan(1);
   });
 });

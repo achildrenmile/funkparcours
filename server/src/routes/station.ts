@@ -1,4 +1,5 @@
 import type { FastifyInstance } from "fastify";
+import { spawn } from "node:child_process";
 import { z } from "zod";
 import { and, eq, or } from "drizzle-orm";
 import { db, schema } from "../db/index.js";
@@ -67,9 +68,15 @@ export async function stationRoutes(app: FastifyInstance) {
       // relais: this group can only transmit once the chain reached it
       const ready = part.type === "relais" ? (round.payload as { incoming?: unknown })?.incoming != null : true;
       // payload (the filled template) only after the timer started
+      let outPayload: unknown = round.startedAt ? round.payload : null;
+      // störfunk: the sender plays the noisy clip, never reads clean text — redact it
+      if (outPayload && part.type === "stoerfunk") {
+        const { text: _drop, ...rest } = outPayload as Record<string, unknown>;
+        outPayload = rest;
+      }
       return reply.send({
         ...base,
-        part: { ...part_common, ready, payload: round.startedAt ? round.payload : null },
+        part: { ...part_common, ready, payload: outPayload },
       });
     }
 
@@ -122,6 +129,57 @@ export async function stationRoutes(app: FastifyInstance) {
       startedAt: startedAt.toISOString(),
     });
     return reply.send({ ok: true, startedAt });
+  });
+
+  // --- leit: Störfunk audio (server-side TTS + noise; text never leaves server) ---
+  app.get("/api/station/:token/audio", async (req, reply) => {
+    const { token } = req.params as { token: string };
+    const st = await resolveStation(token);
+    // leit only — the receiver must copy from the radio, not pull the clip
+    if (!st || st.role !== "leit") return reply.code(403).send({ error: "nur Leitstation" });
+    const [game] = await db.select().from(games).where(eq(games.id, st.group.gameId));
+    if (!game.currentPartId) return reply.code(409).send({ error: "Spiel läuft nicht" });
+    const [part] = await db.select().from(gameParts).where(eq(gameParts.id, game.currentPartId));
+    if (part?.type !== "stoerfunk") return reply.code(409).send({ error: "kein Störfunk-Teil" });
+    const [round] = await db
+      .select()
+      .from(rounds)
+      .where(and(eq(rounds.gamePartId, game.currentPartId), eq(rounds.groupId, st.group.id)));
+    if (!round || !round.startedAt) return reply.code(409).send({ error: "noch nicht gestartet" });
+
+    const payload = round.payload as { text?: string; noise?: number };
+    const text = (payload.text ?? "").slice(0, 400);
+    const noise = Math.max(0, Math.min(1, payload.noise ?? 0.4));
+    if (!text) return reply.code(404).send({ error: "kein Text" });
+
+    // espeak-ng (German TTS) → ffmpeg (radio bandpass + pink noise) → ogg
+    const espeak = spawn("espeak-ng", ["-v", "de", "-s", "155", "--stdout", text]);
+    const ff = spawn("ffmpeg", [
+      "-hide_banner", "-loglevel", "error",
+      "-i", "pipe:0",
+      "-f", "lavfi", "-i", `anoisesrc=color=pink:amplitude=${(noise * 0.6).toFixed(3)}`,
+      "-filter_complex",
+      "[0:a]highpass=f=300,lowpass=f=3000,volume=1.6[v];[v][1:a]amix=inputs=2:duration=first:dropout_transition=0[a]",
+      "-map", "[a]", "-ac", "1", "-ar", "16000", "-f", "ogg", "pipe:1",
+    ]);
+
+    let failed = false;
+    const fail = (e: unknown) => {
+      if (failed) return;
+      failed = true;
+      req.log.error({ err: e }, "stoerfunk audio failed");
+      espeak.kill("SIGKILL");
+      ff.kill("SIGKILL");
+      if (!reply.sent) reply.code(500).send({ error: "Audio konnte nicht erzeugt werden" });
+    };
+    espeak.on("error", fail);
+    ff.on("error", fail);
+    espeak.stdout.on("error", fail);
+    espeak.stdout.pipe(ff.stdin).on("error", () => {});
+
+    reply.header("Content-Type", "audio/ogg");
+    reply.header("Cache-Control", "no-store");
+    return reply.send(ff.stdout);
   });
 
   // --- trupp: submit rebuild ---

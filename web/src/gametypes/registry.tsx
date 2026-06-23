@@ -12,9 +12,12 @@ import { SkizzeLeit, SkizzeTrupp, SkizzeConfigForm } from "./skizze";
 import { ReihenfolgeLeit, ReihenfolgeTrupp, ReihenfolgeConfigForm } from "./reihenfolge";
 import { QuizLeit, QuizTrupp, QuizConfigForm } from "./quiz";
 import { RelaisLeit, RelaisTrupp, RelaisConfigForm } from "./relais";
+import { StoerfunkLeit, StoerfunkTrupp, StoerfunkConfigForm } from "./stoerfunk";
 
 export interface LeitViewProps {
   payload: any;
+  /** station token — needed by views that fetch from a station endpoint (e.g. Störfunk audio) */
+  token?: string;
 }
 export interface TruppViewProps {
   config: any;
@@ -144,6 +147,14 @@ const REGISTRY: Record<string, FeGameType> = {
     LeitView: RelaisLeit,
     TruppView: RelaisTrupp,
     ConfigForm: RelaisConfigForm,
+  },
+  stoerfunk: {
+    id: "stoerfunk",
+    label: "Störfunk (Mithören)",
+    defaultConfig: { length: "kurz", noise: 0.4 },
+    LeitView: StoerfunkLeit,
+    TruppView: StoerfunkTrupp,
+    ConfigForm: StoerfunkConfigForm,
   },
 };
 
