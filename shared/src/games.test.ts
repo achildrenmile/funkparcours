@@ -5,6 +5,7 @@ import { meldung, meldungConfigSchema } from "./games/meldung.js";
 import { koordinaten, koordinatenConfigSchema } from "./games/koordinaten.js";
 import { zahlen, zahlenConfigSchema } from "./games/zahlen.js";
 import { encode, encodeConfigSchema, encodeChar } from "./games/encode.js";
+import { zeit, zeitConfigSchema } from "./games/zeit.js";
 
 describe("nato", () => {
   const cfg = (o = {}) => natoConfigSchema.parse(o);
@@ -140,5 +141,35 @@ describe("encode", () => {
     expect(encodeChar("2")).toBe("ZWO");
     const r = encode.compare({ showReference: true, items: ["A1"] }, { items: ["Alfa Eins"] });
     expect(r.accuracy).toBe(1);
+  });
+});
+
+describe("zeit", () => {
+  const cfg = (o = {}) => zeitConfigSchema.parse(o);
+  it("deterministic + count honored", () => {
+    const a = zeit.generate(cfg({ count: 6 }), createRng("t"));
+    const b = zeit.generate(cfg({ count: 6 }), createRng("t"));
+    expect(a).toEqual(b);
+    expect(a.items.length).toBe(6);
+  });
+  it("uhrzeit mode = HH:MM", () => {
+    const p = zeit.generate(cfg({ mode: "uhrzeit", count: 5 }), createRng("t"));
+    for (const it of p.items) expect(it).toMatch(/^\d{2}:\d{2}$/);
+  });
+  it("datum mode = DD.MM.", () => {
+    const p = zeit.generate(cfg({ mode: "datum", count: 5 }), createRng("t"));
+    for (const it of p.items) expect(it).toMatch(/^\d{2}\.\d{2}\.$/);
+  });
+  it("exact answer -> accuracy 1, all perfect", () => {
+    const p = zeit.generate(cfg({ count: 5 }), createRng("t"));
+    const r = zeit.compare(p, { items: p.items });
+    expect(r.accuracy).toBe(1);
+    expect((r.detail as any).perfectItems).toBe(5);
+  });
+  it("char-wise partial credit; spaces ignored, separators significant", () => {
+    const p = { items: ["14:32"] };
+    const r = zeit.compare(p, { items: [" 14 : 3 9 "] }); // last digit wrong
+    expect(r.accuracy).toBeCloseTo(4 / 5);
+    expect((r.detail as any).perfectItems).toBe(0);
   });
 });
