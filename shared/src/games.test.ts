@@ -6,6 +6,7 @@ import { koordinaten, koordinatenConfigSchema } from "./games/koordinaten.js";
 import { zahlen, zahlenConfigSchema } from "./games/zahlen.js";
 import { encode, encodeConfigSchema, encodeChar } from "./games/encode.js";
 import { zeit, zeitConfigSchema } from "./games/zeit.js";
+import { spruch, spruchConfigSchema } from "./games/spruch.js";
 
 describe("nato", () => {
   const cfg = (o = {}) => natoConfigSchema.parse(o);
@@ -171,5 +172,38 @@ describe("zeit", () => {
     const r = zeit.compare(p, { items: [" 14 : 3 9 "] }); // last digit wrong
     expect(r.accuracy).toBeCloseTo(4 / 5);
     expect((r.detail as any).perfectItems).toBe(0);
+  });
+});
+
+describe("spruch", () => {
+  const cfg = (o = {}) => spruchConfigSchema.parse(o);
+  // build the perfect answer from a generated payload
+  const solve = (p: any) =>
+    p.items.map((it: any) =>
+      Object.fromEntries(it.tokens.filter((t: any) => t.type === "slot").map((t: any) => [t.key, t.value])),
+    );
+  it("deterministic + one item per templateId", () => {
+    const a = spruch.generate(cfg({ templateIds: ["ruf", "lage"] }), createRng("p"));
+    const b = spruch.generate(cfg({ templateIds: ["ruf", "lage"] }), createRng("p"));
+    expect(a).toEqual(b);
+    expect(a.items.map((i) => i.id)).toEqual(["ruf", "lage"]);
+  });
+  it("exact answer -> accuracy 1", () => {
+    const p = spruch.generate(cfg(), createRng("p"));
+    const r = spruch.compare(p, { items: solve(p) });
+    expect(r.accuracy).toBe(1);
+  });
+  it("slot-wise partial credit", () => {
+    const p = spruch.generate(cfg({ templateIds: ["ruf"] }), createRng("p")); // 2 slots
+    const ans = solve(p);
+    ans[0].s1 = "völlig falsch xyz"; // break one of the two slots
+    const r = spruch.compare(p, { items: ans });
+    expect(r.accuracy).toBeCloseTo(1 / 2);
+  });
+  it("fuzzy tolerates a small typo", () => {
+    const p = spruch.generate(cfg({ templateIds: ["standort"], fuzzy: true, fuzzyThreshold: 0.8 }), createRng("p"));
+    const ans = solve(p);
+    ans[0].s0 = ans[0].s0 + "x"; // one extra char
+    expect(spruch.compare(p, { items: ans }).accuracy).toBe(1);
   });
 });
