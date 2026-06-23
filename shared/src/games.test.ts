@@ -8,6 +8,7 @@ import { encode, encodeConfigSchema, encodeChar } from "./games/encode.js";
 import { zeit, zeitConfigSchema } from "./games/zeit.js";
 import { spruch, spruchConfigSchema } from "./games/spruch.js";
 import { skizze, skizzeConfigSchema } from "./games/skizze.js";
+import { reihenfolge, reihenfolgeConfigSchema } from "./games/reihenfolge.js";
 
 describe("nato", () => {
   const cfg = (o = {}) => natoConfigSchema.parse(o);
@@ -238,5 +239,27 @@ describe("skizze", () => {
     const broken = { ...p.cells, [k]: v.kind === "pfeil" ? { kind: "ziel" } : { kind: "pfeil", dir: "nord" } };
     const r1 = skizze.compare(p, { cells: broken as any });
     expect(r1.accuracy).toBeLessThan(1);
+  });
+});
+
+describe("reihenfolge", () => {
+  const cfg = (o = {}) => reihenfolgeConfigSchema.parse(o);
+  it("deterministic + uses all items (permutation)", () => {
+    const a = reihenfolge.generate(cfg({ items: ["a", "b", "c", "d"] }), createRng("r"));
+    const b = reihenfolge.generate(cfg({ items: ["a", "b", "c", "d"] }), createRng("r"));
+    expect(a).toEqual(b);
+    expect([...a.order].sort()).toEqual(["a", "b", "c", "d"]);
+  });
+  it("exact order -> accuracy 1", () => {
+    const p = reihenfolge.generate(cfg(), createRng("r"));
+    const r = reihenfolge.compare(p, { order: p.order });
+    expect(r.accuracy).toBe(1);
+  });
+  it("position-wise partial credit", () => {
+    const p = { order: ["a", "b", "c", "d"] };
+    const swapped = ["b", "a", "c", "d"]; // first two wrong, last two right
+    const r = reihenfolge.compare(p, { order: swapped });
+    expect(r.accuracy).toBeCloseTo(2 / 4);
+    expect((r.detail as any).perPos).toEqual([false, false, true, true]);
   });
 });

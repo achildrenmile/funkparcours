@@ -9,6 +9,7 @@ import { EncodeLeit, EncodeTrupp, EncodeConfigForm } from "./encode";
 import { ZeitLeit, ZeitTrupp, ZeitConfigForm } from "./zeit";
 import { SpruchLeit, SpruchTrupp, SpruchConfigForm } from "./spruch";
 import { SkizzeLeit, SkizzeTrupp, SkizzeConfigForm } from "./skizze";
+import { ReihenfolgeLeit, ReihenfolgeTrupp, ReihenfolgeConfigForm } from "./reihenfolge";
 
 export interface LeitViewProps {
   payload: any;
@@ -117,6 +118,14 @@ const REGISTRY: Record<string, FeGameType> = {
     LeitView: SkizzeLeit,
     TruppView: SkizzeTrupp,
     ConfigForm: SkizzeConfigForm,
+  },
+  reihenfolge: {
+    id: "reihenfolge",
+    label: "Reihenfolge",
+    defaultConfig: { items: ["Sammelplatz", "Brücke Nord", "Bahnhof", "Kreuzung B1", "Funkmast", "Ziel Waldweg"] },
+    LeitView: ReihenfolgeLeit,
+    TruppView: ReihenfolgeTrupp,
+    ConfigForm: ReihenfolgeConfigForm,
   },
 };
 

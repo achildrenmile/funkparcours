@@ -10,6 +10,7 @@ export * from "./games/encode.js";
 export * from "./games/zeit.js";
 export * from "./games/spruch.js";
 export * from "./games/skizze.js";
+export * from "./games/reihenfolge.js";
 
 import { registerGameType, hasGameType, type GameType } from "./gametype.js";
 import { symbolkarte } from "./games/symbolkarte.js";
@@ -21,12 +22,13 @@ import { encode } from "./games/encode.js";
 import { zeit } from "./games/zeit.js";
 import { spruch } from "./games/spruch.js";
 import { skizze } from "./games/skizze.js";
+import { reihenfolge } from "./games/reihenfolge.js";
 
 /**
  * Register all built-in game types. Idempotent so it's safe to call from both
  * the server boot and tests. Future plugins (lego, schaltung) get added here.
  */
 export function registerBuiltinGameTypes(): void {
-  const all: GameType<any, any, any>[] = [symbolkarte, nato, meldung, koordinaten, zahlen, encode, zeit, spruch, skizze];
+  const all: GameType<any, any, any>[] = [symbolkarte, nato, meldung, koordinaten, zahlen, encode, zeit, spruch, skizze, reihenfolge];
   for (const gt of all) if (!hasGameType(gt.id)) registerGameType(gt);
 }
