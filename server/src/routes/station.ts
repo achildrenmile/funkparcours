@@ -35,6 +35,7 @@ export async function stationRoutes(app: FastifyInstance) {
       role: st.role,
       groupId: st.group.id,
       groupName: st.group.name,
+      groupAvatar: st.group.avatar,
       gameTitle: game.title,
       gameStatus: game.status,
     };

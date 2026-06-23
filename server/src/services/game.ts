@@ -276,6 +276,7 @@ export async function rescorePart(partId: string) {
 export interface DashboardGroup {
   groupId: string;
   name: string;
+  avatar: string | null;
   status: "wartet" | "sendet" | "abgegeben";
   accuracy: number | null;
   durationMs: number | null;
@@ -290,6 +291,7 @@ export async function buildDashboard(gameId: string) {
     .orderBy(gameParts.orderIndex);
   const grps = await db.select().from(groups).where(eq(groups.gameId, gameId));
   const nameOf = new Map(grps.map((g) => [g.id, g.name]));
+  const avatarOf = new Map(grps.map((g) => [g.id, g.avatar]));
 
   const perPart: ScoredEntry[][] = [];
   const currentGroups: DashboardGroup[] = [];
@@ -318,6 +320,7 @@ export async function buildDashboard(gameId: string) {
         currentGroups.push({
           groupId: r.groupId,
           name: nameOf.get(r.groupId) ?? "?",
+          avatar: avatarOf.get(r.groupId) ?? null,
           status,
           accuracy: s ? Number(s.accuracy) : null,
           durationMs: s ? s.durationMs : null,
@@ -329,6 +332,7 @@ export async function buildDashboard(gameId: string) {
   const totals = totalScores(perPart).map((t) => ({
     ...t,
     name: nameOf.get(t.groupId) ?? "?",
+    avatar: avatarOf.get(t.groupId) ?? null,
   }));
 
   return {
@@ -343,7 +347,7 @@ export async function buildDashboard(gameId: string) {
     currentGroups,
     perPartScores: perPart.map((part, i) => ({
       partId: parts[i].id,
-      entries: part.map((e) => ({ ...e, name: nameOf.get(e.groupId) ?? "?" })),
+      entries: part.map((e) => ({ ...e, name: nameOf.get(e.groupId) ?? "?", avatar: avatarOf.get(e.groupId) ?? null })),
     })),
     totals,
   };

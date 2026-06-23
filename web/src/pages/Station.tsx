@@ -34,7 +34,7 @@ export function Station() {
     <>
       <Header
         title={roleLabel}
-        sub={`${state.gameTitle} · ${state.groupName}`}
+        sub={`${state.gameTitle} · ${state.groupAvatar ? state.groupAvatar + " " : ""}${state.groupName}`}
         help={state.role === "leit" ? "leit" : "trupp"}
         autoOpenHelp
       />
