@@ -9,6 +9,7 @@ import { zeit, zeitConfigSchema } from "./games/zeit.js";
 import { spruch, spruchConfigSchema } from "./games/spruch.js";
 import { skizze, skizzeConfigSchema } from "./games/skizze.js";
 import { reihenfolge, reihenfolgeConfigSchema } from "./games/reihenfolge.js";
+import { quiz, quizConfigSchema } from "./games/quiz.js";
 
 describe("nato", () => {
   const cfg = (o = {}) => natoConfigSchema.parse(o);
@@ -261,5 +262,32 @@ describe("reihenfolge", () => {
     const r = reihenfolge.compare(p, { order: swapped });
     expect(r.accuracy).toBeCloseTo(2 / 4);
     expect((r.detail as any).perPos).toEqual([false, false, true, true]);
+  });
+});
+
+describe("quiz", () => {
+  const cfg = (o = {}) => quizConfigSchema.parse(o);
+  it("deterministic + count honored + correctIndex in range", () => {
+    const a = quiz.generate(cfg({ count: 5 }), createRng("q"));
+    const b = quiz.generate(cfg({ count: 5 }), createRng("q"));
+    expect(a).toEqual(b);
+    expect(a.questions.length).toBe(5);
+    for (const q of a.questions) {
+      expect(q.options.length).toBe(4);
+      expect(q.correctIndex).toBeGreaterThanOrEqual(0);
+      expect(q.correctIndex).toBeLessThan(4);
+    }
+  });
+  it("answering all correctIndex -> accuracy 1", () => {
+    const p = quiz.generate(cfg({ count: 5 }), createRng("q"));
+    const r = quiz.compare(p, { answers: p.questions.map((q) => q.correctIndex) });
+    expect(r.accuracy).toBe(1);
+  });
+  it("partial credit", () => {
+    const p = quiz.generate(cfg({ count: 4 }), createRng("q"));
+    const ans = p.questions.map((q) => q.correctIndex);
+    ans[0] = (ans[0] + 1) % 4; // break one
+    const r = quiz.compare(p, { answers: ans });
+    expect(r.accuracy).toBeCloseTo(3 / 4);
   });
 });

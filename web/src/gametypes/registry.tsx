@@ -10,6 +10,7 @@ import { ZeitLeit, ZeitTrupp, ZeitConfigForm } from "./zeit";
 import { SpruchLeit, SpruchTrupp, SpruchConfigForm } from "./spruch";
 import { SkizzeLeit, SkizzeTrupp, SkizzeConfigForm } from "./skizze";
 import { ReihenfolgeLeit, ReihenfolgeTrupp, ReihenfolgeConfigForm } from "./reihenfolge";
+import { QuizLeit, QuizTrupp, QuizConfigForm } from "./quiz";
 
 export interface LeitViewProps {
   payload: any;
@@ -126,6 +127,14 @@ const REGISTRY: Record<string, FeGameType> = {
     LeitView: ReihenfolgeLeit,
     TruppView: ReihenfolgeTrupp,
     ConfigForm: ReihenfolgeConfigForm,
+  },
+  quiz: {
+    id: "quiz",
+    label: "Funk-Theorie (Quiz)",
+    defaultConfig: { count: 5 },
+    LeitView: QuizLeit,
+    TruppView: QuizTrupp,
+    ConfigForm: QuizConfigForm,
   },
 };
 
