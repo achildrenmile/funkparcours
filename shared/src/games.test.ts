@@ -7,6 +7,7 @@ import { zahlen, zahlenConfigSchema } from "./games/zahlen.js";
 import { encode, encodeConfigSchema, encodeChar } from "./games/encode.js";
 import { zeit, zeitConfigSchema } from "./games/zeit.js";
 import { spruch, spruchConfigSchema } from "./games/spruch.js";
+import { skizze, skizzeConfigSchema } from "./games/skizze.js";
 
 describe("nato", () => {
   const cfg = (o = {}) => natoConfigSchema.parse(o);
@@ -205,5 +206,37 @@ describe("spruch", () => {
     const ans = solve(p);
     ans[0].s0 = ans[0].s0 + "x"; // one extra char
     expect(spruch.compare(p, { items: ans }).accuracy).toBe(1);
+  });
+});
+
+describe("skizze", () => {
+  const cfg = (o = {}) => skizzeConfigSchema.parse(o);
+  it("deterministic + count honored", () => {
+    const a = skizze.generate(cfg({ count: 6 }), createRng("s"));
+    const b = skizze.generate(cfg({ count: 6 }), createRng("s"));
+    expect(a).toEqual(b);
+    expect(Object.keys(a.cells).length).toBe(6);
+  });
+  it("arrows always carry a direction; others never", () => {
+    const p = skizze.generate(cfg({ rows: 8, cols: 8, count: 30 }), createRng("s"));
+    for (const cell of Object.values(p.cells)) {
+      if (cell.kind === "pfeil") expect(cell.dir).toBeTruthy();
+      else expect(cell.dir).toBeUndefined();
+    }
+  });
+  it("exact rebuild -> accuracy 1", () => {
+    const p = skizze.generate(cfg(), createRng("s"));
+    const r = skizze.compare(p, { cells: p.cells });
+    expect(r.accuracy).toBe(1);
+  });
+  it("wrong direction counts as wrong; empty answer = empties only", () => {
+    const p = skizze.generate(cfg({ rows: 4, cols: 4, count: 3 }), createRng("s"));
+    const r0 = skizze.compare(p, { cells: {} });
+    expect(r0.accuracy).toBeCloseTo((16 - 3) / 16);
+    // flip one arrow's direction (or change a kind) -> still wrong
+    const [k, v] = Object.entries(p.cells)[0];
+    const broken = { ...p.cells, [k]: v.kind === "pfeil" ? { kind: "ziel" } : { kind: "pfeil", dir: "nord" } };
+    const r1 = skizze.compare(p, { cells: broken as any });
+    expect(r1.accuracy).toBeLessThan(1);
   });
 });
