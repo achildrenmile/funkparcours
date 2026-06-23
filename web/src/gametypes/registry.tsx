@@ -5,6 +5,7 @@ import { NatoLeit, NatoTrupp, NatoConfigForm } from "./nato";
 import { MeldungLeit, MeldungTrupp, MeldungConfigForm } from "./meldung";
 import { KoordinatenLeit, KoordinatenTrupp, KoordinatenConfigForm } from "./koordinaten";
 import { ZahlenLeit, ZahlenTrupp, ZahlenConfigForm } from "./zahlen";
+import { EncodeLeit, EncodeTrupp, EncodeConfigForm } from "./encode";
 
 export interface LeitViewProps {
   payload: any;
@@ -81,6 +82,14 @@ const REGISTRY: Record<string, FeGameType> = {
     LeitView: ZahlenLeit,
     TruppView: ZahlenTrupp,
     ConfigForm: ZahlenConfigForm,
+  },
+  encode: {
+    id: "encode",
+    label: "Buchstabieren aktiv (NATO)",
+    defaultConfig: { mode: "mix", count: 4, minLen: 4, maxLen: 7, showReference: true },
+    LeitView: EncodeLeit,
+    TruppView: EncodeTrupp,
+    ConfigForm: EncodeConfigForm,
   },
 };
 

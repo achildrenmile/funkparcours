@@ -4,6 +4,7 @@ import { nato, natoConfigSchema } from "./games/nato.js";
 import { meldung, meldungConfigSchema } from "./games/meldung.js";
 import { koordinaten, koordinatenConfigSchema } from "./games/koordinaten.js";
 import { zahlen, zahlenConfigSchema } from "./games/zahlen.js";
+import { encode, encodeConfigSchema, encodeChar } from "./games/encode.js";
 
 describe("nato", () => {
   const cfg = (o = {}) => natoConfigSchema.parse(o);
@@ -111,5 +112,33 @@ describe("zahlen", () => {
     const r = zahlen.compare(p, { items: [" 145,5 0 9 "] }); // last digit wrong
     expect(r.accuracy).toBeCloseTo(6 / 7);
     expect((r.detail as any).perfectItems).toBe(0);
+  });
+});
+
+describe("encode", () => {
+  const cfg = (o = {}) => encodeConfigSchema.parse(o);
+  it("deterministic + count honored", () => {
+    const a = encode.generate(cfg({ count: 5 }), createRng("e"));
+    const b = encode.generate(cfg({ count: 5 }), createRng("e"));
+    expect(a).toEqual(b);
+    expect(a.items.length).toBe(5);
+  });
+  it("correct NATO spelling -> accuracy 1, all perfect", () => {
+    const p = encode.generate(cfg({ count: 4 }), createRng("e"));
+    const answer = p.items.map((w) => w.split("").map(encodeChar).join(" "));
+    const r = encode.compare(p, { items: answer });
+    expect(r.accuracy).toBe(1);
+    expect((r.detail as any).perfectItems).toBe(4);
+  });
+  it("word-wise partial credit; separators flexible, case-insensitive", () => {
+    const p = { showReference: true, items: ["FUNK"] }; // Foxtrot Uniform November Kilo
+    const r = encode.compare(p, { items: ["foxtrot-uniform, november XXX"] }); // last wrong
+    expect(r.accuracy).toBeCloseTo(3 / 4);
+    expect((r.detail as any).perfectItems).toBe(0);
+  });
+  it("callsign digits encode to German number words", () => {
+    expect(encodeChar("2")).toBe("ZWO");
+    const r = encode.compare({ showReference: true, items: ["A1"] }, { items: ["Alfa Eins"] });
+    expect(r.accuracy).toBe(1);
   });
 });
