@@ -12,6 +12,14 @@ import { test, expect, type Page } from "@playwright/test";
 
 const PASSWORD = "e2e-pass-123";
 
+/** Station pages auto-open a help modal once per role; close it so it can't cover buttons. */
+async function dismissHelp(page: Page): Promise<void> {
+  const close = page.getByRole("button", { name: "Schließen" });
+  await close.click({ timeout: 5_000 }).catch(() => {
+    /* dialog not shown (already dismissed / not this page) */
+  });
+}
+
 /** Pull the `/s/<token>` path for a role off the (role-filtered) links page. */
 async function stationPath(page: Page, code: string, role: "leit" | "trupp"): Promise<string> {
   await page.goto(`/admin/${code}/links?role=${role}`);
@@ -63,6 +71,7 @@ test("symbolkarte: create → play → leaderboard, with no template leak to the
   // 4. Leit reveals the template (starts the server-side timer). Sync on the network,
   //    not on rendered text — the reveal is done when /start returns 200.
   await page.goto(leitPath);
+  await dismissHelp(page);
   await Promise.all([
     page.waitForResponse((r) => r.url().includes(`${leitToken}/start`) && r.ok()),
     page.getByRole("button", { name: "Übertragung starten" }).click(),
@@ -73,6 +82,7 @@ test("symbolkarte: create → play → leaderboard, with no template leak to the
     page.waitForResponse((r) => r.url().includes(truppToken) && r.request().method() === "GET"),
     page.goto(truppPath),
   ]);
+  await dismissHelp(page);
   const submit = page.getByRole("button", { name: "Abgeben" });
   await expect(submit).toBeEnabled();
   const [submitRes] = await Promise.all([
