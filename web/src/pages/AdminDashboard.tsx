@@ -32,9 +32,9 @@ export function AdminDashboard() {
   };
 
   useEffect(() => {
-    load();
+    void load();
   }, [load]);
-  useGameSocket(code ? `code=${code}` : null, () => load());
+  useGameSocket(code ? `code=${code}` : null, () => void load());
 
   if (!data) return <Page>{err ? <Banner kind="warn">{err}</Banner> : "Laden…"}</Page>;
 

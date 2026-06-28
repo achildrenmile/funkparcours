@@ -13,3 +13,5 @@ web/dist/
 server/dist/
 shared/dist/
 uploads/
+playwright-report/
+test-results/

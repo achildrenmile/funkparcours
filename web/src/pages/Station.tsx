@@ -21,9 +21,9 @@ export function Station() {
   }, [token]);
 
   useEffect(() => {
-    load();
+    void load();
   }, [load]);
-  useGameSocket(token ? `token=${token}` : null, () => load());
+  useGameSocket(token ? `token=${token}` : null, () => void load());
 
   if (err) return <Page><Banner kind="warn">{err}</Banner></Page>;
   if (!state) return <Page>Laden…</Page>;

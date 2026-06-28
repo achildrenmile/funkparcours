@@ -53,4 +53,8 @@ export const reihenfolge: GameType<ReihenfolgeConfig, ReihenfolgePayload, Reihen
       detail: { perPos, correct, total },
     };
   },
+
+  samplePerfectAnswer(payload) {
+    return { order: [...payload.order] };
+  },
 };

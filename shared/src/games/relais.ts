@@ -82,4 +82,8 @@ export const relais: GameType<RelaisConfig, RelaisPayload, RelaisAnswer> = {
     const accuracy = ref === "" ? 1 : similarity(ref, got);
     return { accuracy, detail: { received: answer.text, chars: ref.length } };
   },
+
+  samplePerfectAnswer(payload) {
+    return { text: payload.incoming ?? "" };
+  },
 };

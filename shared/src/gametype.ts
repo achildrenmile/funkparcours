@@ -34,6 +34,13 @@ export interface GameType<Config = unknown, Payload = unknown, Answer = unknown>
 
   /** only meaningful for verification === "auto" */
   compare(payload: Payload, answer: Answer): CompareResult;
+
+  /**
+   * The answer that scores a perfect 1.0 against `payload`. Used by the registry
+   * contract test to verify generate/compare agree. Required by design: a new
+   * plugin can't compile without it, so it can never skip the contract.
+   */
+  samplePerfectAnswer(payload: Payload): Answer;
 }
 
 const registry = new Map<string, GameType<any, any, any>>();
