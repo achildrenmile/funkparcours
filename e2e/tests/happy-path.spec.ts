@@ -45,6 +45,7 @@ test("symbolkarte: create → play → leaderboard, with no template leak to the
   // 3. Grab the Leit + Trupp station links for the first group.
   const leitPath = await stationPath(page, code, "leit");
   const truppPath = await stationPath(page, code, "trupp");
+  const leitToken = leitPath.split("/s/")[1];
   const truppToken = truppPath.split("/s/")[1];
 
   // Capture every JSON response addressed to the Trupp token (for the leak check).
