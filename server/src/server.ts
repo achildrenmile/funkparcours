@@ -24,9 +24,11 @@ const cleanup = setInterval(
 cleanup.unref();
 
 for (const sig of ["SIGINT", "SIGTERM"] as const) {
-  process.on(sig, async () => {
-    app.log.info(`${sig} received, shutting down`);
-    await app.close();
-    process.exit(0);
+  process.on(sig, () => {
+    void (async () => {
+      app.log.info(`${sig} received, shutting down`);
+      await app.close();
+      process.exit(0);
+    })();
   });
 }

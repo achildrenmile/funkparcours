@@ -70,7 +70,8 @@ export function KoordinatenTrupp({ config, onSubmit, submitting, lastResult }: T
   const toggle = (k: string) =>
     setMarks((p) => {
       const n = new Set(p);
-      n.has(k) ? n.delete(k) : n.add(k);
+      if (n.has(k)) n.delete(k);
+      else n.add(k);
       return n;
     });
 

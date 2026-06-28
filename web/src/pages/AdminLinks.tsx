@@ -44,7 +44,7 @@ export function AdminLinks() {
   }, [code, nav]);
 
   useEffect(() => {
-    load();
+    void load();
   }, [load]);
 
   return (
@@ -159,7 +159,7 @@ function StationBlock({
         /* cancelled */
       }
     } else {
-      copy();
+      void copy();
     }
   };
 
