@@ -275,7 +275,7 @@ Registry-Zwang; ghcr optional).
 ### Cloudflared — Ist-Zustand auf <deploy-host> (verifiziert 2026-06-21)
 
 cloudflared läuft hier **als Container pro App** (kein Host-Dienst, kein remote-managed
-Tunnel): `<tunnel-container>`, `<other-app>`, `<other-app>`. Jede App hat
+Tunnel): ein eigener Container je App. Jede App hat
 ihren **eigenen, lokal gemanagten Tunnel** mit `cloudflared/config.yml` + Credentials-JSON
 (im jeweiligen App-Ordner, ins App-Docker-Netz gehängt, App per Service-Name erreicht).
 

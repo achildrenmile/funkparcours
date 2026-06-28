@@ -1,5 +1,4 @@
-# Production stack on <deploy-host>. Mirrors the per-app cloudflared-container
-# pattern already used on this host (multiple co-located apps): app + postgres
+# Production stack. Per-app cloudflared-container pattern: app + postgres
 # on a private bridge network, plus a dedicated cloudflared container that owns
 # this app's named tunnel and reaches the app by service name.
 #
@@ -49,9 +48,9 @@ services:
     # Loopback publish lets deploy.sh health-check the internal port.
     ports:
       - "127.0.0.1:3000:3000"
-    # Also joined to the existing external tunnel network so the running
-    # <tunnel-container> can reach this app as http://funkparcours-app:3000
-    # (we reuse that tunnel instead of running our own — see README).
+    # Also joined to an existing external tunnel network so a running
+    # cloudflared container can reach this app as http://funkparcours-app:3000
+    # (reuse that tunnel instead of running our own — see README).
     networks:
       - funkparcours-net
       - tunnel-net
@@ -75,7 +74,8 @@ volumes:
 networks:
   funkparcours-net:
     driver: bridge
-  # the network of the existing <tunnel-container> tunnel (reused for ingress)
+  # an existing external cloudflared tunnel network (reused for ingress);
+  # set its real name via the EXTERNAL_TUNNEL_NETWORK build/compose override.
   tunnel-net:
     external: true
-    name: <tunnel-network>
+    name: ${EXTERNAL_TUNNEL_NETWORK:-external-tunnel-net}
