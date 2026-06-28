@@ -80,4 +80,8 @@ export const quiz: GameType<QuizConfig, QuizPayload, QuizAnswer> = {
       detail: { perQuestion, correct, total },
     };
   },
+
+  samplePerfectAnswer(payload) {
+    return { answers: payload.questions.map((q) => q.correctIndex) };
+  },
 };

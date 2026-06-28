@@ -123,4 +123,8 @@ export const symbolkarte: GameType<SymbolkarteConfig, SymbolkartePayload, Symbol
       detail: { heatmap, correct, total },
     };
   },
+
+  samplePerfectAnswer(payload) {
+    return { cells: { ...payload.cells } };
+  },
 };

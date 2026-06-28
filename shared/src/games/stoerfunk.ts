@@ -47,4 +47,8 @@ export const stoerfunk: GameType<StoerfunkConfig, StoerfunkPayload, StoerfunkAns
     const accuracy = ref === "" ? 1 : similarity(ref, got);
     return { accuracy, detail: { received: answer.text, chars: ref.length } };
   },
+
+  samplePerfectAnswer(payload) {
+    return { text: payload.text };
+  },
 };

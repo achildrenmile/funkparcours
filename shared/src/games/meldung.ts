@@ -125,4 +125,8 @@ export const meldung: GameType<MeldungConfig, MeldungPayload, MeldungAnswer> = {
       detail: { perField, correct, total: fields.length },
     };
   },
+
+  samplePerfectAnswer(payload) {
+    return { values: { ...payload.values } };
+  },
 };

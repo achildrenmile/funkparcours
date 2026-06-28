@@ -74,4 +74,8 @@ export const zeit: GameType<ZeitConfig, ZeitPayload, ZeitAnswer> = {
       detail: { perItem, perfectItems, totalItems: payload.items.length },
     };
   },
+
+  samplePerfectAnswer(payload) {
+    return { items: [...payload.items] };
+  },
 };
