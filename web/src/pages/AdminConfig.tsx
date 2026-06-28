@@ -72,7 +72,7 @@ export function AdminConfig() {
     }
   };
   useEffect(() => {
-    load();
+    void load();
   }, [code]);
 
   const logout = async () => {

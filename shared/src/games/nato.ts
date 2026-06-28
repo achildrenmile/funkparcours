@@ -91,4 +91,8 @@ export const nato: GameType<NatoConfig, NatoPayload, NatoAnswer> = {
       detail: { perWord, perfectWords, totalWords: payload.items.length },
     };
   },
+
+  samplePerfectAnswer(payload) {
+    return { items: [...payload.items] };
+  },
 };

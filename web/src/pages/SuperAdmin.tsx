@@ -19,7 +19,7 @@ export function SuperAdmin() {
     }
   }, []);
   useEffect(() => {
-    check();
+    void check();
   }, [check]);
 
   if (authed === null) return <Page>Laden…</Page>;
@@ -119,7 +119,7 @@ function Overview({ onLogout }: { onLogout: () => void }) {
     }
   }, []);
   useEffect(() => {
-    load();
+    void load();
   }, [load]);
 
   const logout = async () => {
@@ -134,7 +134,7 @@ function Overview({ onLogout }: { onLogout: () => void }) {
     } catch (e) {
       setErr(String(e));
     }
-    load();
+    void load();
   };
 
   if (err) return <Banner kind="warn">{err}</Banner>;

@@ -99,4 +99,13 @@ export const encode: GameType<EncodeConfig, EncodePayload, EncodeAnswer> = {
       detail: { perItem, perfectItems, totalItems: payload.items.length },
     };
   },
+
+  samplePerfectAnswer(payload) {
+    // the perfect answer is each item spelled out in NATO words
+    return {
+      items: payload.items.map((w) =>
+        w.replace(/\s+/g, "").split("").map(encodeChar).join(" "),
+      ),
+    };
+  },
 };

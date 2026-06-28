@@ -87,4 +87,8 @@ export const zahlen: GameType<ZahlenConfig, ZahlenPayload, ZahlenAnswer> = {
       detail: { perItem, perfectItems, totalItems: payload.items.length },
     };
   },
+
+  samplePerfectAnswer(payload) {
+    return { items: [...payload.items] };
+  },
 };

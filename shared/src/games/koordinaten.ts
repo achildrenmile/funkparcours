@@ -71,4 +71,8 @@ export const koordinaten: GameType<
       detail: { heatmap, hits, markers: truth.size, falseMarks: given.size - hits },
     };
   },
+
+  samplePerfectAnswer(payload) {
+    return { markers: [...payload.markers] };
+  },
 };

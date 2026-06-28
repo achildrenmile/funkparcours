@@ -99,11 +99,70 @@ Ablauf zum Ausprobieren:
 
 ---
 
-## Tests
+## Qualität: Tests, Lint & CI
+
+Jeder Push auf `main` und jeder Pull Request durchläuft ein automatisches Tor
+(`.github/workflows/ci.yml`): **lint → test → build** über alle Workspaces, mit einem
+Postgres-Service-Container. `main` ist branch-protected — der `build`-Check **muss** grün
+sein, sonst ist kein Merge möglich.
+
+### Befehle
 
 ```bash
-npm test                # Vitest: Generator + Vergleicher (symbolkarte) + 4 Wertungsmodi
+npm run lint      # eslint . (typbewusst, u.a. no-floating-promises) + tsc -b + web-Typecheck
+npm test          # Vitest über alle Workspaces (shared + server)
+npm run build     # shared → server → web
+npm run test:e2e  # Playwright (erfordert laufenden Stack, s.u.)
 ```
+
+### Test-Ebenen
+
+1. **`shared` — rein & deterministisch.** Pro-Typ-Tests plus ein **registry-getriebener
+   Vertragstest** (`shared/src/games-contract.test.ts`), der über `listGameTypes()`
+   iteriert. Jeder registrierte `GameType` erbt die Gesetze automatisch: deterministisches
+   `generate`, perfekte Antwort → `accuracy 1.0`, Müll-Antwort → `< 1.0`, `accuracy` immer
+   in `[0,1]` (nie `NaN`), `configSchema.parse({})` valide, und Reinheit (kein `web/`-,
+   DOM- oder I/O-Import). Ein neuer Typ kann den Vertrag nicht überspringen — `samplePerfectAnswer`
+   ist im Interface **Pflicht**, der Code kompiliert sonst nicht.
+
+2. **`server` — Integration (`fastify.inject()` + Postgres).** Sicherheits- und
+   Fairness-**Invarianten**, die die Eigenschaft prüfen, nie nur Status 200: der Trupp
+   bekommt `payload` in **keinem** Zustand (pending/transmitting/scored, Reconnect-Snapshot,
+   WS-Socket); die Leitstation erst **nach** `started_at`; `duration_ms` ist
+   server-autoritativ (gefälschte Client-Zeit wirkt nicht); `unique_per_group` vs
+   `same_for_all` erzeugen unterschiedliche bzw. identische Seeds/Payloads; Rate-Limits auf
+   Login/Submit greifen. Die Suite migriert die DB selbst und braucht nur eine Postgres-URL:
+
+   ```bash
+   docker run -d --name fp-test-pg \
+     -e POSTGRES_USER=funk -e POSTGRES_PASSWORD=funk -e POSTGRES_DB=funkparcours_test \
+     -p 5433:5432 postgres:16-alpine
+   DATABASE_URL=postgres://funk:funk@localhost:5433/funkparcours_test npm test -w server
+   ```
+
+3. **e2e — Playwright (gated, nicht pro PR).** `e2e/tests/happy-path.spec.ts` fährt den
+   Symbolkarte-Happy-Path durch die echte UI (Spiel anlegen → konfigurieren → starten →
+   Leit deckt auf → Trupp gibt ab → Leaderboard zeigt Score) und spiegelt die
+   Server-Invariante: keine Antwort an den Trupp enthält die Vorlage (Netzwerk-Check auf
+   `payload`/`cells`). Gegen einen laufenden Stack:
+
+   ```bash
+   docker compose up -d --build                       # App + Postgres auf :3000
+   E2E_BASE_URL=http://localhost:3000 npm run test:e2e
+   ```
+
+   In CI läuft das **nicht** bei jedem PR, sondern via `.github/workflows/e2e.yml`
+   **nightly + manuell + bei Release** — bewusst gated, weil teuer/langsamer; bei Rot wird
+   ein Playwright-Trace als Artefakt hochgeladen (`npx playwright show-trace <trace.zip>`).
+   Manuell starten: **Actions → e2e → Run workflow**, oder
+   `gh workflow run e2e.yml --ref main`.
+
+### Kontext für Agenten/Mitwirkende
+
+`AGENTS.md` hält die Invarianten, Befehle, das Plugin-Rezept und den Wertungsvertrag an
+einer Stelle fest — vor Änderungen lesen. Eine Änderung unter `server/` an einem
+Station-/Runden-/Wertungspfad braucht einen Invarianten-Test (Ebene 2 oben), der die
+*Eigenschaft* prüft.
 
 ---
 
@@ -151,16 +210,19 @@ interface GameType<Config, Payload, Answer> {
   verification: "auto" | "manual_photo";
   generate(config, rng): Payload;        // deterministisch (seeded)
   compare(payload, answer): { accuracy: number; detail: unknown };  // nur "auto"
+  samplePerfectAnswer(payload): Answer;  // Pflicht: speist den Vertragstest
 }
 ```
 
 ### Einen neuen Spieltyp als Plugin hinzufügen
 
 1. **Logik** (`shared/src/games/<typ>.ts`): `configSchema`, `payloadSchema`,
-   `answerSchema`, `generate`, `compare`. In `shared/src/index.ts` per
-   `registerGameType` in `registerBuiltinGameTypes()` registrieren.
-2. **Tests** (`shared/src/<typ>.test.ts`): Generator deterministisch, `compare`
-   liefert korrekte Genauigkeit.
+   `answerSchema`, `generate`, `compare` und `samplePerfectAnswer`. In
+   `shared/src/index.ts` per `registerGameType` in `registerBuiltinGameTypes()`
+   registrieren.
+2. **Vertrag automatisch** — der registry-getriebene Vertragstest deckt den neuen Typ
+   sofort ab (Determinismus, perfekt→1.0, Müll→<1.0, Clamp, Reinheit). Eigene
+   Detail-Tests in `shared/src/<typ>.test.ts` ergänzen nach Bedarf.
 3. **Frontend** (`web/src/gametypes/<typ>.tsx`): `LeitView` (read-only) und `TruppView`
    (interaktiv, ruft `onSubmit(answer)`), plus `ConfigForm`. In
    `web/src/gametypes/registry.tsx` eintragen.

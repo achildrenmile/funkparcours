@@ -126,4 +126,16 @@ export const spruch: GameType<SpruchConfig, SpruchPayload, SpruchAnswer> = {
       detail: { perItem, correct, total },
     };
   },
+
+  samplePerfectAnswer(payload) {
+    return {
+      items: payload.items.map((item) =>
+        Object.fromEntries(
+          item.tokens
+            .filter((t): t is Extract<typeof t, { type: "slot" }> => t.type === "slot")
+            .map((slot) => [slot.key, slot.value]),
+        ),
+      ),
+    };
+  },
 };

@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: funk
+          POSTGRES_PASSWORD: funk
+          POSTGRES_DB: funkparcours
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U funk -d funkparcours"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgres://funk:funk@localhost:5432/funkparcours
+      POSTGRES_USER: funk
+      POSTGRES_PASSWORD: funk
+      POSTGRES_DB: funkparcours
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build

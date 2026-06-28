@@ -100,4 +100,8 @@ export const skizze: GameType<SkizzeConfig, SkizzePayload, SkizzeAnswer> = {
       detail: { heatmap, correct, total },
     };
   },
+
+  samplePerfectAnswer(payload) {
+    return { cells: { ...payload.cells } };
+  },
 };

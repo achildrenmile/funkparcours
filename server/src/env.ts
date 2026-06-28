@@ -31,5 +31,6 @@ export const env = {
     parsed.DATABASE_URL ??
     `postgres://${parsed.POSTGRES_USER}:${parsed.POSTGRES_PASSWORD}@${parsed.POSTGRES_HOST}:${parsed.POSTGRES_PORT}/${parsed.POSTGRES_DB}`,
   isProd: parsed.NODE_ENV === "production",
+  isTest: parsed.NODE_ENV === "test",
   superadminEnabled: parsed.SUPERADMIN_PASSWORD.length > 0,
 };

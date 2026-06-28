@@ -13,16 +13,13 @@ const migrationsFolder = resolve(here, "../../drizzle");
 async function main() {
   const client = postgres(env.databaseUrl, { max: 1 });
   const dbm = drizzle(client);
-  // eslint-disable-next-line no-console
   console.log(`[migrate] applying migrations from ${migrationsFolder}`);
   await migrate(dbm, { migrationsFolder });
   await client.end();
-  // eslint-disable-next-line no-console
   console.log("[migrate] done");
 }
 
 main().catch((err) => {
-  // eslint-disable-next-line no-console
   console.error("[migrate] failed", err);
   process.exit(1);
 });
