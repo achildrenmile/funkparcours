@@ -18,10 +18,12 @@ export async function buildApp() {
   registerBuiltinGameTypes();
 
   const app = Fastify({
-    logger: {
-      level: env.isProd ? "info" : "debug",
-      transport: env.isProd ? undefined : { target: "pino-pretty" },
-    },
+    logger: env.isTest
+      ? false
+      : {
+          level: env.isProd ? "info" : "debug",
+          transport: env.isProd ? undefined : { target: "pino-pretty" },
+        },
     trustProxy: true,
   });
 
